@@ -1,0 +1,106 @@
+/**
+ * MetLife World Cup Final — reference listings (Match 104)
+ * Source: docs/venues/METLIFE.md (market "Now" prices per ticket)
+ * Fields: section, product, row, qty, qtyAvail, marketNow, perks[], badges[], viewScore, viewLabel, type
+ */
+
+export const METLIFE_FINAL_LISTINGS = [
+  // Map bubble heroes
+  ["321", null, "16", 2, 2, 11227, ["Clear view", "2 tickets together"], ["Best price"], 9.2, "Amazing", "seat"],
+  ["329", null, "13", 2, 2, 18142, ["Clear view", "2 tickets together"], [], 8.8, "Amazing", "seat"],
+  ["104", null, "10", 1, 1, 22561, ["Clear view", "1 ticket"], ["Fan favorite"], 9.5, "Amazing", "seat"],
+  ["131", null, "31", 2, 2, 54977, ["Clear view", "2 tickets together"], ["Fan favorite"], 9.9, "Amazing", "seat"],
+
+  // 300 level volume (~$13k pairs) — from listing panel
+  ["349", null, "18", 2, 2, 13141, ["Clear view", "2 tickets together"], [], 8.4, "Amazing", "seat"],
+  ["303", null, "11", 2, 2, 13195, ["Clear view", "2 tickets together"], [], 8.5, "Amazing", "seat"],
+  ["347", null, "19", 2, 2, 13266, ["Clear view", "2 tickets together"], [], 8.3, "Amazing", "seat"],
+  ["314", null, "23", 2, 2, 13381, ["Clear view", "2 tickets together"], [], 8.2, "Amazing", "seat"],
+  ["328", null, "13", 2, 2, 13411, ["Clear view", "2 tickets together"], [], 8.1, "Amazing", "seat"],
+  ["342", null, "12", 2, 2, 13488, ["Clear view", "2 tickets together"], [], 8.0, "Amazing", "seat"],
+  ["313", null, "24", 2, 2, 13494, ["Clear view", "2 tickets together"], [], 8.0, "Amazing", "seat"],
+  ["311", null, "16", 2, 2, 13537, ["Clear view", "2 tickets together"], [], 7.9, "Great", "seat"],
+  ["320", null, "16", 2, 2, 13537, ["Clear view", "2 tickets together"], [], 7.9, "Great", "seat"],
+  ["307", null, "20", 2, 2, 13595, ["Clear view", "2 tickets together"], [], 7.8, "Great", "seat"],
+  ["333", null, "20", 2, 2, 13595, ["Clear view", "2 tickets together"], [], 7.8, "Great", "seat"],
+  ["319", null, null, 2, 2, 13596, ["Clear view", "2 tickets together"], [], 7.8, "Great", "seat"],
+  ["316", null, "16", 2, 2, 13606, ["Clear view", "2 tickets together"], [], 7.7, "Great", "seat"],
+  ["342", null, "5", 2, 2, 13714, ["Clear view", "2 tickets together"], [], 7.6, "Great", "seat"],
+  ["301", null, "14", 2, 2, 13820, ["Clear view", "2 tickets together"], [], 7.5, "Great", "seat"],
+  ["305", null, "18", 2, 2, 13910, ["Clear view", "2 tickets together"], [], 7.4, "Great", "seat"],
+  ["315", null, "12", 2, 2, 14025, ["Clear view", "2 tickets together"], [], 7.3, "Great", "seat"],
+  ["318", null, "15", 2, 2, 14180, ["Clear view", "2 tickets together"], [], 7.2, "Great", "seat"],
+  ["327", null, "11", 2, 2, 14290, ["Clear view", "2 tickets together"], [], 7.1, "Great", "seat"],
+  ["331", null, "19", 2, 2, 14450, ["Clear view", "2 tickets together"], [], 7.0, "Great", "seat"],
+  ["341", null, "17", 2, 2, 14580, ["Clear view", "2 tickets together"], [], 6.9, "Great", "seat"],
+  ["345", null, "21", 2, 2, 14720, ["Clear view", "2 tickets together"], [], 6.8, "Good", "seat"],
+  ["337", null, "22", 2, 2, 14890, ["Limited view", "2 tickets together"], [], 6.7, "Good", "seat"],
+  ["335", null, "8", 2, 2, 15010, ["Clear view", "2 tickets together"], [], 6.6, "Good", "seat"],
+  ["323", null, "10", 2, 2, 15140, ["Clear view", "2 tickets together"], [], 6.5, "Good", "seat"],
+  ["325", null, "14", 2, 2, 15280, ["Clear view", "2 tickets together"], [], 6.4, "Good", "seat"],
+  ["339", null, "16", 2, 2, 15420, ["Clear view", "2 tickets together"], [], 6.3, "Good", "seat"],
+  ["343", null, "20", 2, 2, 15560, ["Clear view", "2 tickets together"], [], 6.2, "Good", "seat"],
+  ["351", null, "24", 2, 2, 15700, ["Clear view", "2 tickets together"], [], 6.1, "Good", "seat"],
+  ["353", null, "18", 2, 2, 15840, ["Clear view", "2 tickets together"], [], 6.0, "Good", "seat"],
+  ["309", null, "13", 2, 2, 15980, ["Clear view", "2 tickets together"], [], 5.9, "Good", "seat"],
+  ["338", null, "15", 2, 2, 16120, ["Clear view", "2 tickets together"], [], 5.8, "Good", "seat"],
+  ["336", null, "11", 2, 2, 16250, ["Clear view", "2 tickets together"], [], 5.7, "Good", "seat"],
+  ["334", null, "9", 2, 2, 16390, ["Clear view", "2 tickets together"], [], 5.6, "Good", "seat"],
+  ["332", null, "7", 2, 2, 16520, ["Limited view", "2 tickets together"], [], 5.5, "Good", "seat"],
+  ["330", null, "5", 2, 2, 16680, ["Clear view", "2 tickets together"], [], 5.4, "Good", "seat"],
+  ["326", null, "12", 2, 2, 16820, ["Clear view", "2 tickets together"], [], 5.3, "Good", "seat"],
+  ["324", null, "8", 2, 2, 16960, ["Clear view", "2 tickets together"], [], 5.2, "Good", "seat"],
+  ["322", null, "6", 2, 2, 17100, ["Clear view", "2 tickets together"], [], 5.1, "Good", "seat"],
+  ["317", null, "19", 2, 2, 17240, ["Clear view", "2 tickets together"], [], 5.0, "Good", "seat"],
+  ["312", null, "17", 2, 2, 17380, ["Clear view", "2 tickets together"], [], 4.9, "Good", "seat"],
+  ["308", null, "14", 2, 2, 17520, ["Clear view", "2 tickets together"], [], 4.8, "Good", "seat"],
+  ["304", null, "10", 2, 2, 17660, ["Clear view", "2 tickets together"], [], 4.7, "Good", "seat"],
+  ["302", null, "8", 2, 2, 17800, ["Clear view", "2 tickets together"], [], 4.6, "Good", "seat"],
+  ["348", null, "22", 2, 2, 17940, ["Clear view", "2 tickets together"], [], 4.5, "Good", "seat"],
+  ["346", null, "20", 2, 2, 18080, ["Clear view", "2 tickets together"], [], 4.4, "Good", "seat"],
+  ["344", null, "18", 2, 2, 18220, ["Clear view", "2 tickets together"], [], 4.3, "Good", "seat"],
+
+  // 100 level premium singles
+  ["104", null, "10", 1, 1, 28201, ["Clear view", "1 ticket"], ["Fan favorite"], 9.6, "Amazing", "seat"],
+  ["315", null, "20", 1, 1, 27489, ["Clear view", "1 ticket"], [], 9.4, "Amazing", "seat"],
+  ["129", null, null, 1, 1, 26921, ["Clear view", "1 ticket"], [], 9.3, "Amazing", "seat"],
+  ["131", null, "31", 1, 1, 26116, ["Clear view", "1 ticket"], ["Fan favorite"], 9.2, "Amazing", "seat"],
+  ["123", null, null, 1, 1, 25426, ["Clear view", "1 ticket"], [], 9.0, "Amazing", "seat"],
+  ["149", null, null, 1, 1, 25324, ["Clear view", "1 ticket"], [], 8.9, "Amazing", "seat"],
+  ["123", null, "22", 1, 1, 25021, ["Clear view", "1 ticket"], [], 8.8, "Amazing", "seat"],
+  ["123", null, "3", 1, 1, 49632, ["Clear view", "Front row of section", "1 ticket"], ["Fan favorite"], 10.0, "Amazing", "seat"],
+  ["143", null, "19", 1, 1, 45355, ["Clear view", "1 ticket"], [], 9.7, "Amazing", "seat"],
+  ["133", null, "15", 1, 1, 45121, ["Clear view", "1 ticket"], [], 9.6, "Amazing", "seat"],
+  ["144", null, "9", 1, 1, 44867, ["Clear view", "1 ticket"], [], 9.5, "Amazing", "seat"],
+  ["144", null, "23", 1, 1, 44867, ["Clear view", "1 ticket"], [], 9.5, "Amazing", "seat"],
+  ["112", null, "12", 1, 1, 32000, ["Clear view", "1 ticket"], [], 9.1, "Amazing", "seat"],
+  ["118", null, "8", 1, 1, 30500, ["Clear view", "1 ticket"], [], 8.9, "Amazing", "seat"],
+  ["121", null, "14", 1, 1, 29800, ["Clear view", "1 ticket"], [], 8.7, "Amazing", "seat"],
+  ["124", null, "16", 1, 1, 29100, ["Clear view", "1 ticket"], [], 8.5, "Amazing", "seat"],
+  ["128", null, "10", 1, 1, 28500, ["Clear view", "1 ticket"], [], 8.4, "Amazing", "seat"],
+  ["134", null, "18", 1, 1, 27800, ["Clear view", "1 ticket"], [], 8.3, "Amazing", "seat"],
+  ["148", null, "20", 1, 1, 27200, ["Clear view", "1 ticket"], [], 8.2, "Amazing", "seat"],
+
+  // Hospitality & zones
+  [null, "Trophy Lounge", null, 1, 1, 48606, ["VIP packages", "Club access", "Food & beverages", "1 ticket"], [], null, null, "hospitality"],
+  [null, "Lower Sideline", null, 1, 1, 55721, ["Hospitality package", "Prime sideline", "1 ticket"], [], null, null, "hospitality"],
+  [null, "Lower Premium", null, 1, 1, 109034, ["VIP Suite", "Premium sideline", "1 ticket"], [], null, null, "hospitality"],
+  [null, "Pitchside Lounge", null, 2, 2, 112167, ["Hospitality: pitchside seats, chef-crafted dining, cocktails", "2 tickets together"], [], null, null, "hospitality"],
+  [null, "Lower Level", null, 2, 2, 14369, ["Clear view", "2 tickets together"], [], 8.0, "Amazing", "zone"],
+  [null, "Category 3", null, 2, 2, 13141, ["Clear view", "2 tickets together"], [], 8.0, "Amazing", "zone"],
+  [null, "Category 1", null, 2, 2, 28201, ["Clear view", "2 tickets together"], [], 9.0, "Amazing", "zone"],
+];
+
+/** All MetLife sections referenced on the Final map */
+export const METLIFE_SECTIONS = [
+  ...Array.from({ length: 49 }, (_, i) => {
+    const n = 101 + i;
+    if (n > 149) return null;
+    return { num: String(n), level: "100", zone: n <= 134 ? "cat-1" : "cat-2" };
+  }).filter(Boolean),
+  ...[301, 302, 303, 304, 305, 307, 308, 309, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 341, 342, 343, 344, 345, 346, 347, 348, 349, 351, 353].map((n) => ({
+    num: String(n),
+    level: "300",
+    zone: n >= 341 ? "cat-3" : n >= 321 ? "cat-3" : "cat-4",
+  })),
+];

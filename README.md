@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontrowly
 
-## Getting Started
+Premium event ticket platform — World Cup, NBA, Premier League, concerts and more.
 
-First, run the development server:
+**Stack:** Next.js 16 · Tailwind CSS · Supabase · WalletConnect Pay · Resend
+
+## Quick start
 
 ```bash
+cd frontrowly
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The app runs with **mock data** until Supabase is configured.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Supabase setup
 
-## Learn More
+Full step-by-step runbook: **[docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md)**
 
-To learn more about Next.js, take a look at the following resources:
+Quick version:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Create a project at [supabase.com](https://supabase.com)
+2. Run migrations `001`–`011` in order (`supabase/migrations/`)
+3. Run seed files (see runbook or [docs/WORLD_CUP_2026_SEED.md](docs/WORLD_CUP_2026_SEED.md))
+4. Copy `.env.example` → `.env.local` and add keys + `ADMIN_EMAILS`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Payments
 
-## Deploy on Vercel
+| Method | Status |
+|--------|--------|
+| **Reservation** | Live — email to admin + customer |
+| **Crypto** | WalletConnect Pay — configure API keys below |
+| **Card** | Coming soon (shown disabled in checkout) |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### WalletConnect Pay
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Open your [WalletConnect Pay dashboard](https://dashboard.walletconnect.com)
+2. Create an API key and merchant; configure crypto settlement addresses (Trust Wallet, etc.)
+3. Add to `.env.local`:
+
+```
+WALLETCONNECT_PAY_API_KEY=...
+WALLETCONNECT_PAY_MERCHANT_ID=...
+```
+
+4. Set webhook URL to `https://yourdomain.com/api/webhooks/walletconnect`
+
+Without keys, reservation checkout works; crypto uses a dev redirect in development.
+
+## Email (Resend)
+
+```
+RESEND_API_KEY=...
+ADMIN_EMAIL=...
+FROM_EMAIL=...
+```
+
+Without Resend, reservation emails are logged to the console.
+
+## Project structure
+
+```
+src/
+  app/
+    (site)/           # Public marketing + checkout
+    admin/            # Admin dashboard
+    api/
+      checkout/       # Create orders
+      webhooks/walletconnect/
+  components/layout/  # Header, TrustBanner, LocaleSelector, etc.
+  lib/
+    walletconnect-pay.ts
+    data/
+supabase/migrations/
+docs/PLATFORM_GAP_BACKLOG.md
+```
+
+## Admin
+
+Visit `/admin` for the dashboard skeleton. Full CRUD coming per backlog.
+
+## Domain
+
+Production: **frontrowly.com**

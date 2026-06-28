@@ -1,0 +1,238 @@
+-- World Cup Final @ MetLife Stadium — Match 104
+-- 77 ticket listings · Frontrowly prices = 10% below reference market
+-- Safe to re-run (clears prior Final listings, upserts event + venue map)
+-- Requires: world-cup-2026-full.sql (event world-cup-final-match-104)
+
+ALTER TABLE venues ADD COLUMN IF NOT EXISTS stadium_map_slug TEXT;
+ALTER TABLE events ADD COLUMN IF NOT EXISTS seat_map_enabled BOOLEAN DEFAULT false;
+ALTER TABLE events ADD COLUMN IF NOT EXISTS scarcity_override INTEGER;
+ALTER TABLE events ADD COLUMN IF NOT EXISTS queue_enabled BOOLEAN DEFAULT false;
+ALTER TABLE ticket_listings ADD COLUMN IF NOT EXISTS compare_at_price DECIMAL(12, 2);
+
+-- Venue map slug
+UPDATE venues SET stadium_map_slug = 'metlife' WHERE slug = 'metlife-stadium';
+
+-- Final event flags
+UPDATE events SET
+  seat_map_enabled = true,
+  queue_enabled = true,
+  scarcity_override = 2,
+  min_price = 10104.30,
+  image_url = '/images/event-world-cup-final.jpg'
+WHERE slug = 'world-cup-final-match-104';
+
+INSERT INTO stadium_maps (venue_id, slug, name)
+SELECT v.id, 'metlife', 'MetLife Stadium'
+FROM venues v WHERE v.slug = 'metlife-stadium'
+ON CONFLICT (venue_id, slug) DO NOTHING;
+
+INSERT INTO stadium_sections (venue_id, section_number, level, zone)
+SELECT v.id, s.num, s.lvl, s.zone
+FROM venues v
+CROSS JOIN (VALUES
+  ('101', '100', 'cat-1'),
+  ('102', '100', 'cat-1'),
+  ('103', '100', 'cat-1'),
+  ('104', '100', 'cat-1'),
+  ('105', '100', 'cat-1'),
+  ('106', '100', 'cat-1'),
+  ('107', '100', 'cat-1'),
+  ('108', '100', 'cat-1'),
+  ('109', '100', 'cat-1'),
+  ('110', '100', 'cat-1'),
+  ('111', '100', 'cat-1'),
+  ('112', '100', 'cat-1'),
+  ('113', '100', 'cat-1'),
+  ('114', '100', 'cat-1'),
+  ('115', '100', 'cat-1'),
+  ('116', '100', 'cat-1'),
+  ('117', '100', 'cat-1'),
+  ('118', '100', 'cat-1'),
+  ('119', '100', 'cat-1'),
+  ('120', '100', 'cat-1'),
+  ('121', '100', 'cat-1'),
+  ('122', '100', 'cat-1'),
+  ('123', '100', 'cat-1'),
+  ('124', '100', 'cat-1'),
+  ('125', '100', 'cat-1'),
+  ('126', '100', 'cat-1'),
+  ('127', '100', 'cat-1'),
+  ('128', '100', 'cat-1'),
+  ('129', '100', 'cat-1'),
+  ('130', '100', 'cat-1'),
+  ('131', '100', 'cat-1'),
+  ('132', '100', 'cat-1'),
+  ('133', '100', 'cat-1'),
+  ('134', '100', 'cat-1'),
+  ('135', '100', 'cat-2'),
+  ('136', '100', 'cat-2'),
+  ('137', '100', 'cat-2'),
+  ('138', '100', 'cat-2'),
+  ('139', '100', 'cat-2'),
+  ('140', '100', 'cat-2'),
+  ('141', '100', 'cat-2'),
+  ('142', '100', 'cat-2'),
+  ('143', '100', 'cat-2'),
+  ('144', '100', 'cat-2'),
+  ('145', '100', 'cat-2'),
+  ('146', '100', 'cat-2'),
+  ('147', '100', 'cat-2'),
+  ('148', '100', 'cat-2'),
+  ('149', '100', 'cat-2'),
+  ('301', '300', 'cat-4'),
+  ('302', '300', 'cat-4'),
+  ('303', '300', 'cat-4'),
+  ('304', '300', 'cat-4'),
+  ('305', '300', 'cat-4'),
+  ('307', '300', 'cat-4'),
+  ('308', '300', 'cat-4'),
+  ('309', '300', 'cat-4'),
+  ('311', '300', 'cat-4'),
+  ('312', '300', 'cat-4'),
+  ('313', '300', 'cat-4'),
+  ('314', '300', 'cat-4'),
+  ('315', '300', 'cat-4'),
+  ('316', '300', 'cat-4'),
+  ('317', '300', 'cat-4'),
+  ('318', '300', 'cat-4'),
+  ('319', '300', 'cat-4'),
+  ('320', '300', 'cat-4'),
+  ('321', '300', 'cat-3'),
+  ('322', '300', 'cat-3'),
+  ('323', '300', 'cat-3'),
+  ('324', '300', 'cat-3'),
+  ('325', '300', 'cat-3'),
+  ('326', '300', 'cat-3'),
+  ('327', '300', 'cat-3'),
+  ('328', '300', 'cat-3'),
+  ('329', '300', 'cat-3'),
+  ('330', '300', 'cat-3'),
+  ('331', '300', 'cat-3'),
+  ('332', '300', 'cat-3'),
+  ('333', '300', 'cat-3'),
+  ('334', '300', 'cat-3'),
+  ('335', '300', 'cat-3'),
+  ('336', '300', 'cat-3'),
+  ('337', '300', 'cat-3'),
+  ('338', '300', 'cat-3'),
+  ('339', '300', 'cat-3'),
+  ('341', '300', 'cat-3'),
+  ('342', '300', 'cat-3'),
+  ('343', '300', 'cat-3'),
+  ('344', '300', 'cat-3'),
+  ('345', '300', 'cat-3'),
+  ('346', '300', 'cat-3'),
+  ('347', '300', 'cat-3'),
+  ('348', '300', 'cat-3'),
+  ('349', '300', 'cat-3'),
+  ('351', '300', 'cat-3'),
+  ('353', '300', 'cat-3')
+) AS s(num, lvl, zone)
+WHERE v.slug = 'metlife-stadium'
+ON CONFLICT (venue_id, section_number) DO NOTHING;
+
+DELETE FROM ticket_listings
+WHERE event_id = (SELECT id FROM events WHERE slug = 'world-cup-final-match-104');
+
+INSERT INTO ticket_listings (
+  event_id, section_number, row_label, product_name, listing_type,
+  quantity, quantity_available, price, compare_at_price,
+  currency, perks, badges, view_score, view_label, sort_order
+)
+SELECT
+  e.id,
+  v.section_number,
+  v.row_label,
+  v.product_name,
+  v.listing_type,
+  v.quantity,
+  v.quantity_available,
+  v.price,
+  v.compare_at_price,
+  v.currency,
+  v.perks,
+  v.badges,
+  v.view_score,
+  v.view_label,
+  v.sort_order
+FROM events e
+CROSS JOIN (VALUES
+('321', '16', NULL, 'seat', 2, 2, 10104.30::DECIMAL, 11227.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY['Best price'], 9.2, 'Amazing', 0),
+('329', '13', NULL, 'seat', 2, 2, 16327.80::DECIMAL, 18142.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 8.8, 'Amazing', 1),
+('104', '10', NULL, 'seat', 1, 1, 20304.90::DECIMAL, 22561.00::DECIMAL, 'USD', ARRAY['Clear view', '1 ticket'], ARRAY['Fan favorite'], 9.5, 'Amazing', 2),
+('131', '31', NULL, 'seat', 2, 2, 49479.30::DECIMAL, 54977.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY['Fan favorite'], 9.9, 'Amazing', 3),
+('349', '18', NULL, 'seat', 2, 2, 11826.90::DECIMAL, 13141.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 8.4, 'Amazing', 4),
+('303', '11', NULL, 'seat', 2, 2, 11875.50::DECIMAL, 13195.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 8.5, 'Amazing', 5),
+('347', '19', NULL, 'seat', 2, 2, 11939.40::DECIMAL, 13266.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 8.3, 'Amazing', 6),
+('314', '23', NULL, 'seat', 2, 2, 12042.90::DECIMAL, 13381.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 8.2, 'Amazing', 7),
+('328', '13', NULL, 'seat', 2, 2, 12069.90::DECIMAL, 13411.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 8.1, 'Amazing', 8),
+('342', '12', NULL, 'seat', 2, 2, 12139.20::DECIMAL, 13488.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 8, 'Amazing', 9),
+('313', '24', NULL, 'seat', 2, 2, 12144.60::DECIMAL, 13494.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 8, 'Amazing', 10),
+('311', '16', NULL, 'seat', 2, 2, 12183.30::DECIMAL, 13537.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 7.9, 'Great', 11),
+('320', '16', NULL, 'seat', 2, 2, 12183.30::DECIMAL, 13537.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 7.9, 'Great', 12),
+('307', '20', NULL, 'seat', 2, 2, 12235.50::DECIMAL, 13595.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 7.8, 'Great', 13),
+('333', '20', NULL, 'seat', 2, 2, 12235.50::DECIMAL, 13595.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 7.8, 'Great', 14),
+('319', NULL, NULL, 'seat', 2, 2, 12236.40::DECIMAL, 13596.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 7.8, 'Great', 15),
+('316', '16', NULL, 'seat', 2, 2, 12245.40::DECIMAL, 13606.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 7.7, 'Great', 16),
+('342', '5', NULL, 'seat', 2, 2, 12342.60::DECIMAL, 13714.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 7.6, 'Great', 17),
+('301', '14', NULL, 'seat', 2, 2, 12438.00::DECIMAL, 13820.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 7.5, 'Great', 18),
+('305', '18', NULL, 'seat', 2, 2, 12519.00::DECIMAL, 13910.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 7.4, 'Great', 19),
+('315', '12', NULL, 'seat', 2, 2, 12622.50::DECIMAL, 14025.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 7.3, 'Great', 20),
+('318', '15', NULL, 'seat', 2, 2, 12762.00::DECIMAL, 14180.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 7.2, 'Great', 21),
+('327', '11', NULL, 'seat', 2, 2, 12861.00::DECIMAL, 14290.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 7.1, 'Great', 22),
+('331', '19', NULL, 'seat', 2, 2, 13005.00::DECIMAL, 14450.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 7, 'Great', 23),
+('341', '17', NULL, 'seat', 2, 2, 13122.00::DECIMAL, 14580.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 6.9, 'Great', 24),
+('345', '21', NULL, 'seat', 2, 2, 13248.00::DECIMAL, 14720.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 6.8, 'Good', 25),
+('337', '22', NULL, 'seat', 2, 2, 13401.00::DECIMAL, 14890.00::DECIMAL, 'USD', ARRAY['Limited view', '2 tickets together'], ARRAY[]::TEXT[], 6.7, 'Good', 26),
+('335', '8', NULL, 'seat', 2, 2, 13509.00::DECIMAL, 15010.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 6.6, 'Good', 27),
+('323', '10', NULL, 'seat', 2, 2, 13626.00::DECIMAL, 15140.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 6.5, 'Good', 28),
+('325', '14', NULL, 'seat', 2, 2, 13752.00::DECIMAL, 15280.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 6.4, 'Good', 29),
+('339', '16', NULL, 'seat', 2, 2, 13878.00::DECIMAL, 15420.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 6.3, 'Good', 30),
+('343', '20', NULL, 'seat', 2, 2, 14004.00::DECIMAL, 15560.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 6.2, 'Good', 31),
+('351', '24', NULL, 'seat', 2, 2, 14130.00::DECIMAL, 15700.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 6.1, 'Good', 32),
+('353', '18', NULL, 'seat', 2, 2, 14256.00::DECIMAL, 15840.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 6, 'Good', 33),
+('309', '13', NULL, 'seat', 2, 2, 14382.00::DECIMAL, 15980.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 5.9, 'Good', 34),
+('338', '15', NULL, 'seat', 2, 2, 14508.00::DECIMAL, 16120.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 5.8, 'Good', 35),
+('336', '11', NULL, 'seat', 2, 2, 14625.00::DECIMAL, 16250.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 5.7, 'Good', 36),
+('334', '9', NULL, 'seat', 2, 2, 14751.00::DECIMAL, 16390.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 5.6, 'Good', 37),
+('332', '7', NULL, 'seat', 2, 2, 14868.00::DECIMAL, 16520.00::DECIMAL, 'USD', ARRAY['Limited view', '2 tickets together'], ARRAY[]::TEXT[], 5.5, 'Good', 38),
+('330', '5', NULL, 'seat', 2, 2, 15012.00::DECIMAL, 16680.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 5.4, 'Good', 39),
+('326', '12', NULL, 'seat', 2, 2, 15138.00::DECIMAL, 16820.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 5.3, 'Good', 40),
+('324', '8', NULL, 'seat', 2, 2, 15264.00::DECIMAL, 16960.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 5.2, 'Good', 41),
+('322', '6', NULL, 'seat', 2, 2, 15390.00::DECIMAL, 17100.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 5.1, 'Good', 42),
+('317', '19', NULL, 'seat', 2, 2, 15516.00::DECIMAL, 17240.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 5, 'Good', 43),
+('312', '17', NULL, 'seat', 2, 2, 15642.00::DECIMAL, 17380.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 4.9, 'Good', 44),
+('308', '14', NULL, 'seat', 2, 2, 15768.00::DECIMAL, 17520.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 4.8, 'Good', 45),
+('304', '10', NULL, 'seat', 2, 2, 15894.00::DECIMAL, 17660.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 4.7, 'Good', 46),
+('302', '8', NULL, 'seat', 2, 2, 16020.00::DECIMAL, 17800.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 4.6, 'Good', 47),
+('348', '22', NULL, 'seat', 2, 2, 16146.00::DECIMAL, 17940.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 4.5, 'Good', 48),
+('346', '20', NULL, 'seat', 2, 2, 16272.00::DECIMAL, 18080.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 4.4, 'Good', 49),
+('344', '18', NULL, 'seat', 2, 2, 16398.00::DECIMAL, 18220.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 4.3, 'Good', 50),
+('104', '10', NULL, 'seat', 1, 1, 25380.90::DECIMAL, 28201.00::DECIMAL, 'USD', ARRAY['Clear view', '1 ticket'], ARRAY['Fan favorite'], 9.6, 'Amazing', 51),
+('315', '20', NULL, 'seat', 1, 1, 24740.10::DECIMAL, 27489.00::DECIMAL, 'USD', ARRAY['Clear view', '1 ticket'], ARRAY[]::TEXT[], 9.4, 'Amazing', 52),
+('129', NULL, NULL, 'seat', 1, 1, 24228.90::DECIMAL, 26921.00::DECIMAL, 'USD', ARRAY['Clear view', '1 ticket'], ARRAY[]::TEXT[], 9.3, 'Amazing', 53),
+('131', '31', NULL, 'seat', 1, 1, 23504.40::DECIMAL, 26116.00::DECIMAL, 'USD', ARRAY['Clear view', '1 ticket'], ARRAY['Fan favorite'], 9.2, 'Amazing', 54),
+('123', NULL, NULL, 'seat', 1, 1, 22883.40::DECIMAL, 25426.00::DECIMAL, 'USD', ARRAY['Clear view', '1 ticket'], ARRAY[]::TEXT[], 9, 'Amazing', 55),
+('149', NULL, NULL, 'seat', 1, 1, 22791.60::DECIMAL, 25324.00::DECIMAL, 'USD', ARRAY['Clear view', '1 ticket'], ARRAY[]::TEXT[], 8.9, 'Amazing', 56),
+('123', '22', NULL, 'seat', 1, 1, 22518.90::DECIMAL, 25021.00::DECIMAL, 'USD', ARRAY['Clear view', '1 ticket'], ARRAY[]::TEXT[], 8.8, 'Amazing', 57),
+('123', '3', NULL, 'seat', 1, 1, 44668.80::DECIMAL, 49632.00::DECIMAL, 'USD', ARRAY['Clear view', 'Front row of section', '1 ticket'], ARRAY['Fan favorite'], 10, 'Amazing', 58),
+('143', '19', NULL, 'seat', 1, 1, 40819.50::DECIMAL, 45355.00::DECIMAL, 'USD', ARRAY['Clear view', '1 ticket'], ARRAY[]::TEXT[], 9.7, 'Amazing', 59),
+('133', '15', NULL, 'seat', 1, 1, 40608.90::DECIMAL, 45121.00::DECIMAL, 'USD', ARRAY['Clear view', '1 ticket'], ARRAY[]::TEXT[], 9.6, 'Amazing', 60),
+('144', '9', NULL, 'seat', 1, 1, 40380.30::DECIMAL, 44867.00::DECIMAL, 'USD', ARRAY['Clear view', '1 ticket'], ARRAY[]::TEXT[], 9.5, 'Amazing', 61),
+('144', '23', NULL, 'seat', 1, 1, 40380.30::DECIMAL, 44867.00::DECIMAL, 'USD', ARRAY['Clear view', '1 ticket'], ARRAY[]::TEXT[], 9.5, 'Amazing', 62),
+('112', '12', NULL, 'seat', 1, 1, 28800.00::DECIMAL, 32000.00::DECIMAL, 'USD', ARRAY['Clear view', '1 ticket'], ARRAY[]::TEXT[], 9.1, 'Amazing', 63),
+('118', '8', NULL, 'seat', 1, 1, 27450.00::DECIMAL, 30500.00::DECIMAL, 'USD', ARRAY['Clear view', '1 ticket'], ARRAY[]::TEXT[], 8.9, 'Amazing', 64),
+('121', '14', NULL, 'seat', 1, 1, 26820.00::DECIMAL, 29800.00::DECIMAL, 'USD', ARRAY['Clear view', '1 ticket'], ARRAY[]::TEXT[], 8.7, 'Amazing', 65),
+('124', '16', NULL, 'seat', 1, 1, 26190.00::DECIMAL, 29100.00::DECIMAL, 'USD', ARRAY['Clear view', '1 ticket'], ARRAY[]::TEXT[], 8.5, 'Amazing', 66),
+('128', '10', NULL, 'seat', 1, 1, 25650.00::DECIMAL, 28500.00::DECIMAL, 'USD', ARRAY['Clear view', '1 ticket'], ARRAY[]::TEXT[], 8.4, 'Amazing', 67),
+('134', '18', NULL, 'seat', 1, 1, 25020.00::DECIMAL, 27800.00::DECIMAL, 'USD', ARRAY['Clear view', '1 ticket'], ARRAY[]::TEXT[], 8.3, 'Amazing', 68),
+('148', '20', NULL, 'seat', 1, 1, 24480.00::DECIMAL, 27200.00::DECIMAL, 'USD', ARRAY['Clear view', '1 ticket'], ARRAY[]::TEXT[], 8.2, 'Amazing', 69),
+(NULL, NULL, 'Trophy Lounge', 'hospitality', 1, 1, 43745.40::DECIMAL, 48606.00::DECIMAL, 'USD', ARRAY['VIP packages', 'Club access', 'Food & beverages', '1 ticket'], ARRAY[]::TEXT[], NULL, NULL, 70),
+(NULL, NULL, 'Lower Sideline', 'hospitality', 1, 1, 50148.90::DECIMAL, 55721.00::DECIMAL, 'USD', ARRAY['Hospitality package', 'Prime sideline', '1 ticket'], ARRAY[]::TEXT[], NULL, NULL, 71),
+(NULL, NULL, 'Lower Premium', 'hospitality', 1, 1, 98130.60::DECIMAL, 109034.00::DECIMAL, 'USD', ARRAY['VIP Suite', 'Premium sideline', '1 ticket'], ARRAY[]::TEXT[], NULL, NULL, 72),
+(NULL, NULL, 'Pitchside Lounge', 'hospitality', 2, 2, 100950.30::DECIMAL, 112167.00::DECIMAL, 'USD', ARRAY['Hospitality: pitchside seats, chef-crafted dining, cocktails', '2 tickets together'], ARRAY[]::TEXT[], NULL, NULL, 73),
+(NULL, NULL, 'Lower Level', 'zone', 2, 2, 12932.10::DECIMAL, 14369.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 8, 'Amazing', 74),
+(NULL, NULL, 'Category 3', 'zone', 2, 2, 11826.90::DECIMAL, 13141.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 8, 'Amazing', 75),
+(NULL, NULL, 'Category 1', 'zone', 2, 2, 25380.90::DECIMAL, 28201.00::DECIMAL, 'USD', ARRAY['Clear view', '2 tickets together'], ARRAY[]::TEXT[], 9, 'Amazing', 76)
+) AS v(section_number, row_label, product_name, listing_type, quantity, quantity_available, price, compare_at_price, currency, perks, badges, view_score, view_label, sort_order)
+WHERE e.slug = 'world-cup-final-match-104';

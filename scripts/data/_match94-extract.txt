@@ -1,0 +1,28 @@
+World Cup Tickets - Lumen Field at Lumen Field Event - Complex"
+   through "3598 tickets" (before first listing)
+   Match line: W81 vs W82 - World Cup - Round of 16 (Match 94)
+   Date: Mon · Jul 6 · 5:00 PM
+   Include "Only 4% of tickets left", all section carousel numbers, filters, US$1,985 price range, View 3598 tickets / 3598 tickets
+
+2. **match-94-listings-part1.txt** — Listings from:
+   "Lumen Field at Lumen Field Event - Complex - Section 239" (Row C sponsored)
+   through "Section 325" Row W @ $2,227 incl. fees (inclusive)
+
+3. **match-94-listings-rest-a.txt** — Continues from:
+   "Section 338" Row S @ $2,528
+   through "Section 232" Row C @ $6,291 incl. fees
+
+4. **match-94-listings-rest-b.txt** — Continues from:
+   "Section 104" Row D @ $6,421
+   through "Section 107" Row A @ $17,408 incl. fees
+   ending with "Showing 277 of 280"
+
+CRITICAL: Exactly 277 listings total across part1+rest-a+rest-b. Do NOT duplicate the Section 446-style overlap from match-93. part1 ends BEFORE Section 338 Row S. rest-a starts AT Section 338 Row S.
+
+After writing all files, run:
+cd c:/Users/Kaelo/frontrowly
+node scripts/data/compose-match94-paste.mjs
+npm run seed:match-94
+
+Report: listing count parsed, min Frontrowly price, files written.
+</user_query>
