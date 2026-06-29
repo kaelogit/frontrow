@@ -3,12 +3,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, MapPin, Trophy } from "lucide-react";
 import { CityMatchList } from "@/components/marketing/CityMatchList";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { getEvents } from "@/lib/data/events";
 import {
   filterEventsForCity,
   getAllWorldCupCitySlugs,
   getWorldCupCity,
 } from "@/lib/marketing/world-cup-cities";
+import { collectionPageMetadata } from "@/lib/seo/event-metadata";
+import {
+  buildBreadcrumbJsonLd,
+  buildCollectionPageJsonLd,
+} from "@/lib/seo/jsonld";
 
 interface CityPageProps {
   params: Promise<{ city: string }>;
@@ -23,10 +29,12 @@ export async function generateMetadata({ params }: CityPageProps) {
   const city = getWorldCupCity(slug);
   if (!city) return { title: "World Cup 2026" };
 
-  return {
+  return collectionPageMetadata({
     title: city.seoTitle,
     description: city.seoDescription,
-  };
+    path: `/world-cup-2026/${slug}`,
+    imagePath: city.image,
+  });
 }
 
 export default async function WorldCupCityPage({ params }: CityPageProps) {
@@ -42,6 +50,20 @@ export default async function WorldCupCityPage({ params }: CityPageProps) {
 
   return (
     <>
+      <JsonLd
+        data={[
+          buildCollectionPageJsonLd({
+            name: city.seoTitle,
+            description: city.seoDescription,
+            path: `/world-cup-2026/${slug}`,
+            events: cityEvents,
+          }),
+          buildBreadcrumbJsonLd([
+            { name: "World Cup 2026", path: "/world-cup-2026" },
+            { name: city.name, path: `/world-cup-2026/${slug}` },
+          ]),
+        ]}
+      />
       <section className="relative overflow-hidden bg-emerald-950 text-white">
         <Image
           src={city.image}

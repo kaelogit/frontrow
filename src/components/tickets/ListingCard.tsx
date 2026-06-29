@@ -1,5 +1,5 @@
 import type { TicketListing } from "@/types/database";
-import { SectionViewPreview } from "@/components/stadium/SectionViewPreview";
+import { MiniMap } from "@/components/stadium/MiniMap";
 import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -40,11 +40,7 @@ export function ListingCard({
       onMouseLeave={() => onHover?.(null)}
       className="flex w-full gap-3 rounded-xl border border-slate-200 bg-white p-4 transition hover:border-sky-200 hover:shadow-sm"
     >
-      <SectionViewPreview
-        mapSlug={mapSlug}
-        sectionNumber={listing.section_number}
-        variant="compact"
-      />
+      <MiniMap mapSlug={mapSlug} sectionNumber={listing.section_number} />
 
       <div className="min-w-0 flex-1">
         <p className="font-semibold text-slate-900">{title}</p>

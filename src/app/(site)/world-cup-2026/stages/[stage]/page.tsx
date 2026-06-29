@@ -6,6 +6,7 @@ import {
   StageMatchTable,
   StagePricingTable,
 } from "@/components/marketing/StageMatchTable";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { getEvents } from "@/lib/data/events";
 import {
   filterEventsForStage,
@@ -14,6 +15,11 @@ import {
   stagePageHref,
 } from "@/lib/marketing/world-cup-stages";
 import { WORLD_CUP_STAGE_PAGES } from "@/lib/marketing/world-cup-stages";
+import { collectionPageMetadata } from "@/lib/seo/event-metadata";
+import {
+  buildBreadcrumbJsonLd,
+  buildCollectionPageJsonLd,
+} from "@/lib/seo/jsonld";
 
 interface StagePageProps {
   params: Promise<{ stage: string }>;
@@ -28,10 +34,12 @@ export async function generateMetadata({ params }: StagePageProps) {
   const stage = getWorldCupStage(slug);
   if (!stage) return { title: "World Cup 2026" };
 
-  return {
+  return collectionPageMetadata({
     title: stage.seoTitle,
     description: stage.seoDescription,
-  };
+    path: `/world-cup-2026/stages/${slug}`,
+    imagePath: stage.image,
+  });
 }
 
 export default async function WorldCupStagePage({ params }: StagePageProps) {
@@ -47,6 +55,20 @@ export default async function WorldCupStagePage({ params }: StagePageProps) {
 
   return (
     <>
+      <JsonLd
+        data={[
+          buildCollectionPageJsonLd({
+            name: stage.seoTitle,
+            description: stage.seoDescription,
+            path: `/world-cup-2026/stages/${slug}`,
+            events: stageEvents,
+          }),
+          buildBreadcrumbJsonLd([
+            { name: "World Cup 2026", path: "/world-cup-2026" },
+            { name: stage.shortTitle, path: `/world-cup-2026/stages/${slug}` },
+          ]),
+        ]}
+      />
       <section className="relative overflow-hidden bg-slate-900 text-white">
         <Image
           src={stage.image}

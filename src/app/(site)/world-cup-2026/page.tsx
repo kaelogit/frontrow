@@ -6,12 +6,15 @@ import { SocialProofBar } from "@/components/marketing/SocialProofBar";
 import { getEvents } from "@/lib/data/events";
 import { IMAGES } from "@/lib/images";
 import { getSocialProofSettings } from "@/lib/social-proof/settings";
+import { collectionPageMetadata } from "@/lib/seo/event-metadata";
 
-export const metadata = {
+export const metadata = collectionPageMetadata({
   title: "World Cup 2026 Tickets — USA, Canada & Mexico",
   description:
     "Buy FIFA World Cup 2026 tickets by city, national team, or knockout stage. Group stage, Round of 32, quarterfinals and Final.",
-};
+  path: "/world-cup-2026",
+  imagePath: IMAGES.categories["world-cup-2026"],
+});
 
 export default async function WorldCupPage() {
   const [events, socialProof] = await Promise.all([
