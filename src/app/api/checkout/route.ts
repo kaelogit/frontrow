@@ -7,6 +7,7 @@ import { sendReservationEmails } from "@/lib/email";
 import { hasSupabaseConfig, createAdminClient } from "@/lib/supabase/admin";
 import { saveDemoOrder, type AdminOrder } from "@/lib/orders/demo-store";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { RATE_LIMITS } from "@/lib/rate-limit-config";
 import {
   releaseExpiredInventory,
   reserveCheckoutItems,
@@ -53,10 +54,7 @@ export async function POST(request: Request) {
     // Rate limit checkout spam (IP + email).
     const gate = await enforceRateLimit({
       request,
-      id: "checkout",
-      scope: "ip_email",
-      windowSeconds: 60,
-      limit: 8,
+      ...RATE_LIMITS.checkout,
       email: data.customerEmail,
     });
     if (!gate.ok) return gate.response;

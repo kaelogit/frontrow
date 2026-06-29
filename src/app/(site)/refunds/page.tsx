@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { RotateCcw, CalendarX, HelpCircle } from "lucide-react";
+import { RotateCcw, CalendarX, HelpCircle, Bitcoin } from "lucide-react";
+import { TrustMarketplaceNotice } from "@/components/trust/TrustMarketplaceNotice";
 
 export const metadata = {
   title: "Refunds",
@@ -10,7 +11,7 @@ const scenarios = [
   {
     icon: CalendarX,
     title: "Event cancelled",
-    body: "If an event is officially cancelled and not rescheduled, you receive a full refund of the ticket price paid to Frontrowly. Processing typically takes 5–10 business days depending on your payment method.",
+    body: "If an event is officially cancelled and not rescheduled, you receive a full refund of the ticket price paid to Frontrowly. Processing typically takes 5–10 business days depending on your payment method (card, bank transfer, or crypto where applicable).",
   },
   {
     icon: RotateCcw,
@@ -22,18 +23,26 @@ const scenarios = [
     title: "Order issues",
     body: "Invalid tickets, non-delivery, or a material listing error may qualify under our order guarantee — replacement tickets or a full refund where applicable.",
   },
+  {
+    icon: Bitcoin,
+    title: "Reservation & crypto orders",
+    body: "Reservation requests are not charged until you complete payment via the link we email you. If you paid with crypto and a refund is approved, we return funds to an agreed wallet address or equivalent — crypto refunds cannot always be reversed on-chain automatically.",
+  },
 ];
 
 export default function RefundsPage() {
   return (
     <div className="px-4 py-12 sm:px-6 sm:py-16">
       <div className="mx-auto max-w-3xl">
+        <TrustMarketplaceNotice className="mb-8" />
+
         <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
           Refund policy
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-slate-600">
-          We want you to feel confident booking with Frontrowly. This policy explains
-          when refunds apply for marketplace ticket orders.
+          Frontrowly is an independent ticket marketplace. This policy explains when refunds
+          apply for orders placed through our site — including reservation checkouts and
+          completed payments.
         </p>
 
         <div className="mt-10 space-y-4">
@@ -56,7 +65,7 @@ export default function RefundsPage() {
         <section className="mt-12 space-y-6">
           <h2 className="text-xl font-semibold text-slate-900">Generally non-refundable</h2>
           <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-600 sm:text-base">
-            <li>Change of mind after your order is confirmed</li>
+            <li>Change of mind after your order is confirmed and tickets are secured</li>
             <li>Partial attendance or unused tickets</li>
             <li>Travel, accommodation, or other costs related to the event</li>
             <li>Incorrect attendee details provided by you at checkout</li>
@@ -83,15 +92,19 @@ export default function RefundsPage() {
         <section className="mt-10 rounded-2xl border border-slate-200 bg-slate-50 p-6">
           <h2 className="font-semibold text-slate-900">Marketplace notice</h2>
           <p className="mt-2 text-sm leading-relaxed text-slate-600">
-            Frontrowly is an independent reseller. Ticket prices may differ from face
-            value. Refunds cover the amount you paid to us for tickets — not price
-            differences if you repurchase elsewhere. Consumer rights in your country may
-            provide additional protections; nothing here limits those where applicable.
+            Ticket prices on Frontrowly may differ from face value. Refunds cover the amount
+            you paid us for tickets — not price differences if you repurchase elsewhere.
+            Consumer rights in your country may provide additional protections; nothing here
+            limits those where applicable.
           </p>
           <p className="mt-4 text-sm text-slate-500">
             See also our{" "}
             <Link href="/guarantee" className="text-sky-600 hover:underline">
               Order guarantee
+            </Link>
+            ,{" "}
+            <Link href="/delivery" className="text-sky-600 hover:underline">
+              Ticket delivery
             </Link>
             ,{" "}
             <Link href="/terms" className="text-sky-600 hover:underline">

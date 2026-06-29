@@ -2,6 +2,12 @@ import type { PitchRect, SectionGeometry } from "@/lib/stadium/types";
 import {
   OVAL_BOWL_CX,
   OVAL_BOWL_CY,
+  OVAL_BOWL_SX,
+  OVAL_BOWL_SY,
+  PREVIEW_BOWL_CX,
+  PREVIEW_BOWL_CY,
+  PREVIEW_BOWL_SX,
+  PREVIEW_BOWL_SY,
   ePoint,
   stadiumWedge,
 } from "@/lib/stadium/stadium-wedge";
@@ -13,6 +19,13 @@ export const GENERIC_BOWL_PITCH: PitchRect = {
   y: 205,
   width: 290,
   height: 246,
+};
+
+/** Circular pitch for flat top-down generic bowl maps. */
+export const GENERIC_BOWL_PITCH_CIRCLE = {
+  cx: OVAL_BOWL_CX,
+  cy: OVAL_BOWL_CY,
+  r: 72,
 };
 
 const RING_BOUNDS: Record<number, [number, number]> = {
@@ -43,6 +56,22 @@ function sortSectionNumbers(sections: string[]): string[] {
 export function buildGenericSectionGeometry(
   sectionNumbers: Iterable<string>
 ): SectionGeometry[] {
+  return buildBowlGeometry(
+    sectionNumbers,
+    OVAL_BOWL_CX,
+    OVAL_BOWL_CY,
+    OVAL_BOWL_SX,
+    OVAL_BOWL_SY
+  );
+}
+
+function buildBowlGeometry(
+  sectionNumbers: Iterable<string>,
+  cx: number,
+  cy: number,
+  sx: number,
+  sy: number
+): SectionGeometry[] {
   const unique = [...new Set(sectionNumbers)].filter(Boolean);
   const byLevel = new Map<number, string[]>();
 
@@ -67,11 +96,11 @@ export function buildGenericSectionGeometry(
       const a1 = a0 + step * 0.86;
       const mid = (a0 + a1) / 2;
       const labelR = (innerR + outerR) / 2;
-      const label = ePoint(OVAL_BOWL_CX, OVAL_BOWL_CY, labelR, mid);
+      const label = ePoint(cx, cy, labelR, mid, sx, sy);
 
       geometry.push({
         number,
-        path: stadiumWedge(OVAL_BOWL_CX, OVAL_BOWL_CY, innerR, outerR, a0, a1),
+        path: stadiumWedge(cx, cy, innerR, outerR, a0, a1, sx, sy),
         labelX: label.x,
         labelY: label.y,
       });
@@ -79,4 +108,17 @@ export function buildGenericSectionGeometry(
   }
 
   return geometry;
+}
+
+/** Isometric oval bowl for thumbnails and laptop angle-view previews. */
+export function buildPreviewSectionGeometry(
+  sectionNumbers: Iterable<string>
+): SectionGeometry[] {
+  return buildBowlGeometry(
+    sectionNumbers,
+    PREVIEW_BOWL_CX,
+    PREVIEW_BOWL_CY,
+    PREVIEW_BOWL_SX,
+    PREVIEW_BOWL_SY
+  );
 }

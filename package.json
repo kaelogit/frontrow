@@ -9,6 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "icons:generate": "node scripts/generate-brand-icons.mjs",
+    "prompts:match-images": "npx tsx scripts/print-match-image-prompts.ts",
+    "flags:fetch": "npx tsx scripts/fetch-team-flags.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "seed:wc2026": "node scripts/generate-world-cup-2026-seed.mjs",

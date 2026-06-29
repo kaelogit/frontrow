@@ -1,6 +1,6 @@
 import type { Team } from "@/types/database";
 
-/** ISO 3166-1 alpha-2 for flagcdn.com */
+/** ISO 3166-1 alpha-2 (or flagcdn subdivision codes) → local SVG in public/flags/ */
 const SLUG_TO_ISO: Record<string, string> = {
   algeria: "dz",
   argentina: "ar",
@@ -103,16 +103,40 @@ const EMOJI_FALLBACK: Record<string, string> = {
   uzbekistan: "🇺🇿",
 };
 
+/** All World Cup 2026 participant flag files under public/flags/ */
+export const TEAM_FLAG_ISO_CODES = [...new Set(Object.values(SLUG_TO_ISO))].sort();
+
+export const TBD_FLAG_PATH = "/flags/tbd.svg";
+
 export function getTeamIsoCode(team: Team): string | null {
   return SLUG_TO_ISO[team.slug] ?? null;
 }
 
-export function getTeamFlagImageUrl(team: Team, width = 40): string | null {
+export function getTeamIsoBySlug(slug: string): string | null {
+  return SLUG_TO_ISO[slug] ?? null;
+}
+
+export function getTeamFlagPath(iso: string): string {
+  return `/flags/${iso}.svg`;
+}
+
+/** Local SVG path for a team, or null if slug unknown */
+export function getTeamFlagImageUrl(team: Team): string | null {
   const iso = getTeamIsoCode(team);
   if (!iso) return null;
-  return `https://flagcdn.com/w${width}/${iso}.png`;
+  return getTeamFlagPath(iso);
+}
+
+export function getTeamFlagImageUrlBySlug(slug: string): string | null {
+  const iso = getTeamIsoBySlug(slug);
+  if (!iso) return null;
+  return getTeamFlagPath(iso);
 }
 
 export function getTeamFlagEmoji(team: Team): string | null {
   return EMOJI_FALLBACK[team.slug] ?? null;
+}
+
+export function hasTeamFlagAsset(team: Team): boolean {
+  return Boolean(getTeamIsoCode(team));
 }

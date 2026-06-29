@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { NextResponse } from "next/server";
 import { sendContactEmails } from "@/lib/email";
+import { enforceRateLimit } from "@/lib/rate-limit";
+import { RATE_LIMITS } from "@/lib/rate-limit-config";
 
 const contactSchema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -20,6 +22,13 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    const gate = await enforceRateLimit({
+      request,
+      ...RATE_LIMITS.contact,
+      email: parsed.data.email,
+    });
+    if (!gate.ok) return gate.response;
 
     await sendContactEmails(parsed.data);
 

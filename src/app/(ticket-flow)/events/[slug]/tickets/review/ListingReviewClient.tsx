@@ -11,6 +11,7 @@ import { OrderSummaryCard } from "@/components/tickets/OrderSummaryCard";
 import { MobileCheckoutBar } from "@/components/tickets/MobileCheckoutBar";
 import { ListingTrustDetails } from "@/components/tickets/ListingTrustDetails";
 import { ExpandableEventDescription } from "@/components/tickets/ExpandableEventDescription";
+import { buildEventBreadcrumbs } from "@/lib/navigation/breadcrumbs";
 import { saveCheckoutSession } from "@/lib/checkout/storage";
 import { scarcityPercent } from "@/lib/tickets/filters";
 
@@ -75,7 +76,12 @@ export function ListingReviewClient({
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-100">
-      <TicketFlowHeader event={event} showBackToTickets compact />
+      <TicketFlowHeader
+        event={event}
+        breadcrumbs={buildEventBreadcrumbs(event, "review", sectionTitle)}
+        showBackToTickets
+        compact
+      />
       <ScarcityBanner percent={scarcity} />
 
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6 pb-28 sm:px-6 lg:flex-row lg:pb-6">

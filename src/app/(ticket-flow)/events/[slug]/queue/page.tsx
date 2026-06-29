@@ -1,8 +1,10 @@
 import { notFound, redirect } from "next/navigation";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { getEventBySlug } from "@/lib/data/events";
 import { getEventTicketHref } from "@/lib/events/event-scarcity";
 import { getQueueAdmission } from "@/lib/queue/cookies";
 import { hasValidAdmission } from "@/lib/queue/store";
+import { buildEventBreadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { QueuePageClient } from "./QueuePageClient";
 
 interface QueuePageProps {
@@ -36,5 +38,10 @@ export default async function QueuePage({ params }: QueuePageProps) {
     redirect(getEventTicketHref(event));
   }
 
-  return <QueuePageClient event={event} />;
+  return (
+    <>
+      <JsonLd data={buildEventBreadcrumbJsonLd(event, "queue")} />
+      <QueuePageClient event={event} />
+    </>
+  );
 }

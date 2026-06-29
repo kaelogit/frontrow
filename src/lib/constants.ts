@@ -11,13 +11,13 @@ export const PAYMENT_METHODS = {
   reservation: {
     id: "reservation" as const,
     label: "Request reservation",
-    description: "We'll email you payment options — no account needed",
+    description: "We'll email you to complete your ticket purchase process",
     enabled: true,
   },
   card: {
     id: "card" as const,
     label: "Pay with card",
-    description: "Visa · Mastercard · Apple Pay",
+    description: "Visa · Mastercard ",
     enabled: false,
     disabledLabel: "Under maintenance",
   },

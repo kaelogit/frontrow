@@ -30,6 +30,8 @@ import {
   type QuickFind,
   type SortOption,
 } from "@/lib/tickets/filters";
+import { buildEventBreadcrumbs } from "@/lib/navigation/breadcrumbs";
+import { trackTicketsOpen } from "@/lib/analytics/funnel";
 import type { FeatureFilter, ViagogoZoneFilter } from "@/lib/tickets/zone-filters";
 
 const PAGE_SIZE = 10;
@@ -48,6 +50,10 @@ export function TicketBrowserModal({
   onClose,
 }: TicketBrowserModalProps) {
   const router = useRouter();
+  const breadcrumbs = useMemo(
+    () => buildEventBreadcrumbs(event, "tickets"),
+    [event]
+  );
   const [showQtyModal, setShowQtyModal] = useState(true);
   const [ticketCount, setTicketCount] = useState(2);
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
@@ -89,10 +95,15 @@ export function TicketBrowserModal({
     setHeaderCollapsed(false);
     setReferenceMapFailed(false);
     document.body.style.overflow = "hidden";
+    trackTicketsOpen({
+      slug: event.slug,
+      matchNumber: event.match_number,
+      competitionSlug: event.competition?.slug ?? null,
+    });
     return () => {
       document.body.style.overflow = "";
     };
-  }, [open]);
+  }, [open, event.slug, event.match_number, event.competition?.slug]);
 
   const stockSections = useMemo(() => sectionsWithStock(listings), [listings]);
   const useGenericSectionMap =
@@ -362,6 +373,7 @@ export function TicketBrowserModal({
       <div className="shrink-0">
         <TicketFlowHeader
           event={event}
+          breadcrumbs={breadcrumbs}
           onBack={onClose}
           backLabel="Close ticket search"
           compact
@@ -421,6 +433,7 @@ export function TicketBrowserModal({
                   <SectionViewPreview
                     mapSlug={previewMapSlug}
                     sectionNumber={highlightedSection}
+                    allSections={stockSections}
                     variant="panel"
                     className="min-h-[140px]"
                   />
@@ -443,7 +456,7 @@ export function TicketBrowserModal({
             </div>
 
             <MobileTicketMapSheet
-              map={<TicketMapView {...mapViewProps} />}
+              map={<TicketMapView {...mapViewProps} compact />}
               resultCount={filtered.length}
               ticketCount={ticketCount}
               onTicketCountChange={handleTicketCountChange}

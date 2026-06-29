@@ -1,6 +1,5 @@
-import { HelpCircle } from "lucide-react";
 import type { EventWithRelations, Team } from "@/types/database";
-import { TeamFlag } from "@/components/teams/TeamFlag";
+import { TeamFlag, TbdFlag } from "@/components/teams/TeamFlag";
 import { getEventMatchDisplay } from "@/lib/events/match-display";
 import { cn } from "@/lib/utils";
 
@@ -44,16 +43,7 @@ function TeamSlot({
     return (
       <span className="inline-flex items-center gap-1.5">
         {isTbd ? (
-          <span
-            className={cn(
-              "inline-flex h-5 w-5 items-center justify-center rounded-full border border-dashed text-[10px] font-bold",
-              variant === "inverse"
-                ? "border-white/40 bg-white/10 text-white/70"
-                : "border-slate-300 bg-slate-100 text-slate-400"
-            )}
-          >
-            ?
-          </span>
+          <TbdFlag size="sm" />
         ) : team ? (
           <TeamFlag team={team} size="sm" />
         ) : (
@@ -86,7 +76,7 @@ function TeamSlot({
         )}
       >
         {isTbd ? (
-          <HelpCircle className={variant === "hero" ? "h-6 w-6" : "h-4 w-4"} />
+          <TbdFlag size={variant === "hero" ? "lg" : "md"} />
         ) : team ? (
           <TeamFlag team={team} size={variant === "hero" ? "lg" : "md"} />
         ) : (

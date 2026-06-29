@@ -2,7 +2,7 @@
 
 import { getStadiumMapDefinition } from "@/lib/stadium/registry";
 import {
-  buildGenericSectionGeometry,
+  buildPreviewSectionGeometry,
   GENERIC_BOWL_PITCH,
   GENERIC_BOWL_VIEWBOX,
 } from "@/lib/stadium/generic-bowl-layout";
@@ -13,6 +13,7 @@ import {
   viewConePath,
 } from "@/lib/stadium/section-view-angle";
 import { roundSvgPath } from "@/lib/stadium/svg-coords";
+import type { PitchRect, SectionGeometry } from "@/lib/stadium/types";
 import { cn } from "@/lib/utils";
 
 interface MiniMapProps {
@@ -23,7 +24,34 @@ interface MiniMapProps {
   className?: string;
 }
 
-/** Listing-card thumbnail — zoomed section wedge + view cone toward the pitch. */
+function resolveAngleViewGeometry(
+  mapSlug: string | null | undefined,
+  sectionNumber: string,
+  allSections?: Iterable<string>
+): { geometry: SectionGeometry[]; pitch: PitchRect; viewBox: string } {
+  const definition = getStadiumMapDefinition(mapSlug);
+  const sectionPool = allSections
+    ? [...new Set(allSections)]
+    : [sectionNumber];
+
+  if (definition?.geometry?.length) {
+    return {
+      geometry: definition.geometry,
+      pitch: definition.pitch,
+      viewBox: definition.viewBox,
+    };
+  }
+
+  return {
+    geometry: buildPreviewSectionGeometry(
+      sectionPool.length ? sectionPool : [sectionNumber]
+    ),
+    pitch: GENERIC_BOWL_PITCH,
+    viewBox: GENERIC_BOWL_VIEWBOX,
+  };
+}
+
+/** Listing-card thumbnail — isometric angle view with section wedge + view cone. */
 export function MiniMap({
   mapSlug,
   sectionNumber,
@@ -43,24 +71,19 @@ export function MiniMap({
     );
   }
 
-  const definition = getStadiumMapDefinition(mapSlug);
-  const sectionPool = allSections
-    ? [...new Set(allSections)]
-    : [sectionNumber];
-  const geometry =
-    definition?.geometry ??
-    buildGenericSectionGeometry(sectionPool.length ? sectionPool : [sectionNumber]);
-  const fullViewBox = definition?.viewBox ?? GENERIC_BOWL_VIEWBOX;
-  const pitch = definition?.pitch ?? GENERIC_BOWL_PITCH;
+  const { geometry, pitch, viewBox } = resolveAngleViewGeometry(
+    mapSlug,
+    sectionNumber,
+    allSections
+  );
 
   const targetSection =
     geometry.find((g) => g.number === sectionNumber) ??
-    buildGenericSectionGeometry([sectionNumber])[0];
+    buildPreviewSectionGeometry([sectionNumber])[0];
 
   const cone = buildViewCone(targetSection, pitch, 0.38);
-
   const anchor = { x: targetSection.labelX, y: targetSection.labelY };
-  const croppedViewBox = cropViewBoxAroundSection(anchor, pitch, fullViewBox, 90);
+  const croppedViewBox = cropViewBoxAroundSection(anchor, pitch, viewBox, 90);
 
   return (
     <div
@@ -77,6 +100,17 @@ export function MiniMap({
         role="img"
       >
         <rect width="800" height="640" fill="#f1f5f9" />
+
+        {geometry.map((sec) => (
+          <path
+            key={sec.number}
+            d={roundSvgPath(sec.path)}
+            fill={sec.number === sectionNumber ? "transparent" : "#e2e8f0"}
+            stroke="#cbd5e1"
+            strokeWidth="0.75"
+            opacity={sec.number === sectionNumber ? 0 : 0.9}
+          />
+        ))}
 
         <rect
           x={pitch.x}

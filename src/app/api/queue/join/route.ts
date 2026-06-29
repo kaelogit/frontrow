@@ -3,16 +3,11 @@ import { getEventBySlug } from "@/lib/data/events";
 import { setQueueToken, getQueueToken, setQueueAdmission } from "@/lib/queue/cookies";
 import { joinQueue } from "@/lib/queue/store";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { RATE_LIMITS } from "@/lib/rate-limit-config";
 
 export async function POST(request: Request) {
   try {
-    const gate = await enforceRateLimit({
-      request,
-      id: "queue_join",
-      scope: "ip",
-      windowSeconds: 60,
-      limit: 30,
-    });
+    const gate = await enforceRateLimit({ request, ...RATE_LIMITS.queueJoin });
     if (!gate.ok) return gate.response;
 
     const body = (await request.json()) as { slug?: string };

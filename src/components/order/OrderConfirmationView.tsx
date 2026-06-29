@@ -129,7 +129,7 @@ function nextSteps(
       title: "What happens next",
       steps: [
         "We received your reservation request",
-        "Our team emails payment options within 24 hours",
+        "Our team will email you soon with payment options",
         `Complete payment within ${RESERVATION_HOLD_HOURS} hours to keep your hold`,
         "E-tickets are delivered after payment is confirmed",
       ],

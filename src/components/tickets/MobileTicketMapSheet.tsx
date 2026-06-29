@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 export type SheetSnap = "peek" | "expanded";
 
-const PEEK_HEIGHT = 0.44;
+const PEEK_HEIGHT = 0.4;
 const EXPANDED_HEIGHT = 0.9;
 
 interface MobileTicketMapSheetProps {
@@ -123,7 +123,12 @@ export function MobileTicketMapSheet({
       ref={containerRef}
       className="relative min-h-0 flex-1 lg:hidden"
     >
-      <div className="absolute inset-0 bg-slate-100">{map}</div>
+      <div
+        className="absolute inset-x-0 top-0 flex -translate-y-1 items-start justify-center overflow-hidden bg-slate-100"
+        style={{ bottom: `${sheetHeight * 100}%` }}
+      >
+        {map}
+      </div>
 
       <div
         className={cn(

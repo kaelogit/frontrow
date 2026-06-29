@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Shield, CheckCircle, Mail, Ticket, Clock } from "lucide-react";
+import { Shield, CheckCircle, Mail, Ticket, Clock, Store } from "lucide-react";
+import { TrustMarketplaceNotice } from "@/components/trust/TrustMarketplaceNotice";
 import { SITE_NAME } from "@/lib/constants";
 
 export const metadata = {
@@ -13,13 +14,13 @@ const guarantees = [
     icon: Ticket,
     title: "Valid for entry",
     description:
-      "Every ticket we confirm is genuine and valid for entry at the venue, in the category you purchased.",
+      "Every ticket we confirm is genuine and valid for entry at the venue, in the category and section shown on your order.",
   },
   {
     icon: Clock,
-    title: "Delivered on time",
+    title: "Verified delivery",
     description:
-      "Your e-ticket arrives before the event unless we clearly state otherwise at checkout. We'll notify you if timing differs for your event.",
+      "E-tickets are delivered to your email before the event unless we clearly state a later delivery window at checkout. See our delivery page for timing by event type.",
   },
   {
     icon: Shield,
@@ -39,6 +40,8 @@ export default function GuaranteePage() {
   return (
     <div className="px-4 py-12 sm:px-6 sm:py-16">
       <div className="mx-auto max-w-3xl">
+        <TrustMarketplaceNotice className="mb-8" />
+
         <div className="flex items-center gap-3">
           <Shield className="h-10 w-10 shrink-0 text-sky-500" />
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
@@ -46,10 +49,21 @@ export default function GuaranteePage() {
           </h1>
         </div>
         <p className="mt-4 text-lg leading-relaxed text-slate-600">
-          {SITE_NAME} is an independent ticket marketplace. We stand behind every
-          confirmed order so you can buy with confidence — whether it&apos;s a World Cup
-          knockout or a sold-out final.
+          {SITE_NAME} connects fans with verified resale inventory for major live events.
+          We stand behind every confirmed order — whether you pay by reservation, card, or
+          crypto — so you can buy with confidence.
         </p>
+
+        <div className="mt-6 flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-5 card-shadow">
+          <Store className="mt-0.5 h-6 w-6 shrink-0 text-slate-500" />
+          <div className="text-sm leading-relaxed text-slate-600">
+            <p className="font-semibold text-slate-900">Independent reseller</p>
+            <p className="mt-1">
+              We are not affiliated with FIFA, leagues, teams, or venues. Listings come from
+              trusted supply partners. Your checkout is always with {SITE_NAME}.
+            </p>
+          </div>
+        </div>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2">
           {guarantees.map(({ icon: Icon, title, description }) => (
@@ -69,9 +83,9 @@ export default function GuaranteePage() {
           <ul className="space-y-4">
             {[
               "Tickets not received by the stated delivery window (excluding delays caused by incorrect email addresses)",
-              "Tickets rejected at the venue due to invalidity, not attendee eligibility or venue policy",
+              "Tickets rejected at the venue due to invalidity — not attendee eligibility, conduct, or venue policy",
               "Material mismatch between your confirmed listing and what you receive (section, category, or quantity)",
-              "Event officially cancelled — full refund per our refund policy",
+              "Event officially cancelled and not rescheduled — full refund per our refund policy",
             ].map((item) => (
               <li key={item} className="flex items-start gap-3 text-slate-700">
                 <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
@@ -88,31 +102,34 @@ export default function GuaranteePage() {
             <li>Missing the event due to travel, visa, or personal scheduling</li>
             <li>Venue dress codes, age limits, or local entry restrictions</li>
             <li>Event postponement where your ticket remains valid for the new date</li>
-            <li>Prices fluctuating after purchase on the secondary market</li>
+            <li>Market price changes after you purchase</li>
           </ul>
         </section>
 
         <section className="mt-10">
           <h2 className="text-xl font-semibold text-slate-900">How to make a claim</h2>
-          <p className="mt-3 text-slate-600 leading-relaxed">
+          <p className="mt-3 leading-relaxed text-slate-600">
             Email{" "}
             <a href="mailto:support@frontrowly.com" className="text-sky-600 hover:underline">
               support@frontrowly.com
             </a>{" "}
-            with your order reference, a description of the issue, and any supporting
-            details (venue rejection notice, screenshots, etc.). We investigate promptly
-            and will offer replacement tickets or a refund where the guarantee applies.
+            with your order reference, a description of the issue, and any supporting details
+            (venue rejection notice, screenshots, etc.). We investigate promptly and will offer
+            replacement tickets or a refund where the guarantee applies.
           </p>
           <p className="mt-4 text-sm text-slate-500">
-            Full legal terms are in our{" "}
-            <Link href="/terms" className="text-sky-600 hover:underline">
-              Terms of service
-            </Link>{" "}
-            and{" "}
+            Related:{" "}
+            <Link href="/delivery" className="text-sky-600 hover:underline">
+              Ticket delivery
+            </Link>
+            {" · "}
             <Link href="/refunds" className="text-sky-600 hover:underline">
               Refund policy
             </Link>
-            .
+            {" · "}
+            <Link href="/terms" className="text-sky-600 hover:underline">
+              Terms of service
+            </Link>
           </p>
         </section>
       </div>

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { TrackOrderConfirmation } from "@/components/analytics/TrackOrderConfirmation";
 import { OrderConfirmationView } from "@/components/order/OrderConfirmationView";
 import { getConfirmationOrder } from "@/lib/orders/confirmation-order";
 
@@ -29,10 +30,13 @@ export default async function OrderConfirmationPage({
   }
 
   return (
-    <OrderConfirmationView
-      order={order}
-      demoPayment={demo_payment === "1"}
-      cryptoPending={crypto_pending === "1"}
-    />
+    <>
+      <TrackOrderConfirmation order={order} />
+      <OrderConfirmationView
+        order={order}
+        demoPayment={demo_payment === "1"}
+        cryptoPending={crypto_pending === "1"}
+      />
+    </>
   );
 }

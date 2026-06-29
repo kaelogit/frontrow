@@ -6,6 +6,7 @@ import { Hourglass, Loader2 } from "lucide-react";
 import type { EventWithRelations } from "@/types/database";
 import { TicketFlowHeader } from "@/components/tickets/TicketFlowHeader";
 import { TicketFlowFooter } from "@/components/tickets/TicketFlowFooter";
+import { buildEventBreadcrumbs } from "@/lib/navigation/breadcrumbs";
 import { getEventTicketHref } from "@/lib/events/event-scarcity";
 import { formatEventDate } from "@/lib/utils";
 
@@ -103,7 +104,10 @@ export function QueuePageClient({ event }: QueuePageClientProps) {
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
-      <TicketFlowHeader event={event} />
+      <TicketFlowHeader
+        event={event}
+        breadcrumbs={buildEventBreadcrumbs(event, "queue")}
+      />
 
       <div className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center px-4 py-12">
         <div className="w-full rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">

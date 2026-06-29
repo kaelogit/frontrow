@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import type { ComponentProps } from "react";
+import { trackEventCardClick } from "@/lib/analytics/funnel";
 import { trackEventClick } from "@/lib/analytics/event-clicks";
-
 type TrackEventClickLinkProps = ComponentProps<typeof Link> & {
   eventSlug: string;
 };
@@ -18,6 +18,7 @@ export function TrackEventClickLink({
       {...props}
       onClick={(e) => {
         trackEventClick(eventSlug);
+        trackEventCardClick(eventSlug);
         onClick?.(e);
       }}
     />

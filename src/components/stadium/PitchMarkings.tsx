@@ -81,3 +81,31 @@ export function PitchMarkings({
     </g>
   );
 }
+
+/** Simplified markings for circular top-down pitch (generic bowl maps). */
+export function CircularPitchMarkings({
+  cx,
+  cy,
+  r,
+  stroke = "white",
+  strokeWidth = 1.5,
+  opacity = 0.9,
+}: {
+  cx: number;
+  cy: number;
+  r: number;
+  stroke?: string;
+  strokeWidth?: number;
+  opacity?: number;
+}) {
+  const s = { stroke, strokeWidth, fill: "none", opacity };
+  const centerR = r * 0.24;
+
+  return (
+    <g>
+      <line x1={cx} y1={cy - r} x2={cx} y2={cy + r} {...s} />
+      <circle cx={cx} cy={cy} r={centerR} {...s} />
+      <circle cx={cx} cy={cy} r={2} fill={stroke} opacity={opacity} />
+    </g>
+  );
+}

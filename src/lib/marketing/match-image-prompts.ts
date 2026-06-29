@@ -104,71 +104,7 @@ export const MATCH_IMAGE_SPECS: MatchImageSpec[] = [
     round: "group",
     scene: "Lincoln Financial Field bowl from upper tier, city skyline distant, pristine empty pitch under lights",
   },
-  // Round of 32
-  {
-    matchNumber: "80",
-    venue: "Mercedes-Benz Stadium",
-    city: "Atlanta",
-    round: "round-of-32",
-    scene: "Mercedes-Benz halo roof oculus, dramatic light on empty pitch, knockout-round gravitas",
-  },
-  {
-    matchNumber: "81",
-    venue: "Levi's Stadium",
-    city: "Santa Clara",
-    round: "round-of-32",
-    scene: "Levi's Stadium sweeping red seats empty, California hills beyond, World Cup ball on penalty spot",
-  },
-  {
-    matchNumber: "82",
-    venue: "Lumen Field",
-    city: "Seattle",
-    round: "round-of-32",
-    scene: "Lumen Field at dusk, misty atmosphere, tunnel mouth leading to lit pitch, no fans in color",
-  },
-  {
-    matchNumber: "83",
-    venue: "BMO Field",
-    city: "Toronto",
-    round: "round-of-32",
-    scene: "BMO Field intimate bowl, Toronto towers in background, empty pitch, international tournament mood",
-  },
-  {
-    matchNumber: "84",
-    venue: "SoFi Stadium",
-    city: "Inglewood",
-    round: "round-of-32",
-    scene: "SoFi translucent canopy from inside, sleek modern bowl, LA sunset through roof panels",
-  },
-  {
-    matchNumber: "85",
-    venue: "BC Place",
-    city: "Vancouver",
-    round: "round-of-32",
-    scene: "BC Place domed roof interior, mountain mural screens, empty pitch, Pacific Northwest evening",
-  },
-  {
-    matchNumber: "86",
-    venue: "Hard Rock Stadium",
-    city: "Miami Gardens",
-    round: "round-of-32",
-    scene: "Hard Rock Stadium open-air bowl, palm trees beyond upper deck, tropical sunset, empty field",
-  },
-  {
-    matchNumber: "87",
-    venue: "Arrowhead Stadium",
-    city: "Kansas City",
-    round: "round-of-32",
-    scene: "Arrowhead Stadium vast bowl aerial angle, Midwest sky, empty pitch, legendary venue scale",
-  },
-  {
-    matchNumber: "88",
-    venue: "AT&T Stadium",
-    city: "Arlington",
-    round: "round-of-32",
-    scene: "AT&T Stadium interior, massive center videoboard, cavernous empty bowl, Texas scale",
-  },
-  // Round of 16
+  // Round of 16 (R32 matches 80–88 use TEAM_MATCH_SPECS)
   {
     matchNumber: "89",
     venue: "Lincoln Financial Field",

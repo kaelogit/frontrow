@@ -27,6 +27,9 @@ export function TicketFlowFooter({ showGuarantee = true }: TicketFlowFooterProps
           <Link href="/guarantee" className="hover:text-sky-600">
             Order guarantee
           </Link>
+          <Link href="/delivery" className="hover:text-sky-600">
+            Delivery
+          </Link>
           <Link href="/refunds" className="hover:text-sky-600">
             Refunds
           </Link>

@@ -1,6 +1,11 @@
 "use client";
 
 import { MiniMap } from "@/components/stadium/MiniMap";
+import {
+  buildPreviewSectionGeometry,
+  GENERIC_BOWL_PITCH,
+  GENERIC_BOWL_VIEWBOX,
+} from "@/lib/stadium/generic-bowl-layout";
 import { getStadiumMapDefinition } from "@/lib/stadium/registry";
 import { PitchMarkings } from "@/components/stadium/PitchMarkings";
 import {
@@ -9,21 +14,59 @@ import {
   viewConePath,
 } from "@/lib/stadium/section-view-angle";
 import { roundSvgPath } from "@/lib/stadium/svg-coords";
+import type { PitchRect, SectionGeometry } from "@/lib/stadium/types";
 import { cn } from "@/lib/utils";
 
 interface SectionViewPreviewProps {
   mapSlug?: string | null;
   sectionNumber: string | null;
+  /** In-stock sections for generic venue bowl background */
+  allSections?: Iterable<string>;
   /** compact = listing card thumbnail (MiniMap); panel = map overlay with view cone */
   variant?: "compact" | "panel";
   className?: string;
 }
 
-const FALLBACK_PITCH = { x: 280, y: 220, width: 240, height: 200 };
+function resolvePanelGeometry(
+  mapSlug: string | null | undefined,
+  sectionNumber: string,
+  allSections?: Iterable<string>
+): {
+  geometry: SectionGeometry[];
+  pitch: PitchRect;
+  viewBox: string;
+  section: SectionGeometry | undefined;
+} {
+  const definition = getStadiumMapDefinition(mapSlug);
+  const sectionPool = allSections
+    ? [...new Set(allSections)]
+    : [sectionNumber];
+
+  if (definition?.geometry?.length) {
+    return {
+      geometry: definition.geometry,
+      pitch: definition.pitch,
+      viewBox: definition.viewBox,
+      section: definition.geometry.find((g) => g.number === sectionNumber),
+    };
+  }
+
+  const geometry = buildPreviewSectionGeometry(
+    sectionPool.length ? sectionPool : [sectionNumber]
+  );
+
+  return {
+    geometry,
+    pitch: GENERIC_BOWL_PITCH,
+    viewBox: GENERIC_BOWL_VIEWBOX,
+    section: geometry.find((g) => g.number === sectionNumber),
+  };
+}
 
 export function SectionViewPreview({
   mapSlug,
   sectionNumber,
+  allSections,
   variant = "compact",
   className,
 }: SectionViewPreviewProps) {
@@ -32,6 +75,7 @@ export function SectionViewPreview({
       <MiniMap
         mapSlug={mapSlug}
         sectionNumber={sectionNumber}
+        allSections={allSections}
         className={className}
       />
     );
@@ -50,10 +94,11 @@ export function SectionViewPreview({
     );
   }
 
-  const definition = getStadiumMapDefinition(mapSlug);
-  const viewBox = definition?.viewBox ?? "0 0 800 640";
-  const pitch = definition?.pitch ?? FALLBACK_PITCH;
-  const section = definition?.geometry.find((g) => g.number === sectionNumber);
+  const { geometry, pitch, viewBox, section } = resolvePanelGeometry(
+    mapSlug,
+    sectionNumber,
+    allSections
+  );
 
   const cone = section
     ? buildViewCone(section, pitch)
@@ -79,6 +124,17 @@ export function SectionViewPreview({
       >
         <rect width="800" height="640" fill="#f1f5f9" />
 
+        {geometry.map((sec) => (
+          <path
+            key={sec.number}
+            d={roundSvgPath(sec.path)}
+            fill={sec.number === sectionNumber ? "transparent" : "#e2e8f0"}
+            stroke="#cbd5e1"
+            strokeWidth="0.5"
+            opacity={sec.number === sectionNumber ? 0 : 0.85}
+          />
+        ))}
+
         <rect
           x={pitch.x}
           y={pitch.y}
@@ -94,17 +150,6 @@ export function SectionViewPreview({
           height={pitch.height}
         />
 
-        {definition?.geometry.map((sec) => (
-          <path
-            key={sec.number}
-            d={roundSvgPath(sec.path)}
-            fill={sec.number === sectionNumber ? "transparent" : "#e2e8f0"}
-            stroke="#cbd5e1"
-            strokeWidth="0.5"
-            opacity={sec.number === sectionNumber ? 0 : 0.85}
-          />
-        ))}
-
         <path
           d={roundSvgPath(viewConePath(cone))}
           fill="rgba(14, 165, 233, 0.35)"
@@ -112,7 +157,7 @@ export function SectionViewPreview({
           strokeWidth="1"
         />
 
-        {section ? (
+        {section?.path ? (
           <path
             d={roundSvgPath(section.path)}
             fill="#0284c7"
@@ -123,9 +168,18 @@ export function SectionViewPreview({
           <circle cx={anchor.x} cy={anchor.y} r={14} fill="#0284c7" />
         )}
 
+        <circle
+          cx={anchor.x}
+          cy={anchor.y}
+          r={7}
+          fill="#0284c7"
+          stroke="#0c4a6e"
+          strokeWidth="2"
+        />
+
         <text
           x={anchor.x}
-          y={anchor.y - (section ? 18 : 22)}
+          y={anchor.y - 20}
           textAnchor="middle"
           fontSize="14"
           fontWeight="700"

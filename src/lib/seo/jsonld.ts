@@ -1,5 +1,10 @@
 import type { EventWithRelations, Venue } from "@/types/database";
 import { SITE_NAME, SITE_URL } from "@/lib/constants";
+import {
+  breadcrumbCurrentPath,
+  buildEventBreadcrumbs,
+  type BreadcrumbTail,
+} from "@/lib/navigation/breadcrumbs";
 import { absoluteUrl } from "@/lib/site-metadata";
 import { buildEventSeoDescription } from "@/lib/seo/event-metadata";
 import { buildAggregateRatingJsonLd } from "@/lib/seo/marketplace-rating";
@@ -137,40 +142,21 @@ export function buildSportsEventJsonLd(
   return sportsEvent;
 }
 
-/** BreadcrumbList for event detail pages */
+/** BreadcrumbList for event and ticket-flow pages */
 export function buildEventBreadcrumbJsonLd(
-  event: EventWithRelations
+  event: EventWithRelations,
+  tail: BreadcrumbTail = "event",
+  tailLabel?: string
 ): JsonLdObject {
-  const items: JsonLdObject[] = [
-    {
-      "@type": "ListItem",
-      position: 1,
-      name: "Events",
-      item: absoluteUrl("/events"),
-    },
-  ];
+  const items = buildEventBreadcrumbs(event, tail, tailLabel);
+  const currentPath = breadcrumbCurrentPath(event, tail);
 
-  if (event.competition?.slug === "world-cup-2026") {
-    items.push({
-      "@type": "ListItem",
-      position: 2,
-      name: "World Cup 2026",
-      item: absoluteUrl("/world-cup-2026"),
-    });
-  }
-
-  items.push({
-    "@type": "ListItem",
-    position: items.length + 1,
-    name: event.title,
-    item: absoluteUrl(`/events/${event.slug}`),
-  });
-
-  return {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: items,
-  };
+  return buildBreadcrumbJsonLd(
+    items.map((item, index) => ({
+      name: item.label,
+      path: item.href ?? (index === items.length - 1 ? currentPath : "/"),
+    }))
+  );
 }
 
 /** Standalone StadiumOrArena node (optional supplement for venue-heavy pages) */

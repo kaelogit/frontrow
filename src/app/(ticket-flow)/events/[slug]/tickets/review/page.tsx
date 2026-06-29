@@ -1,8 +1,10 @@
 import { notFound, redirect } from "next/navigation";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { getEventBySlug } from "@/lib/data/events";
 import { getEventTicketHref } from "@/lib/events/event-scarcity";
 import { getListingsForEvent } from "@/lib/data/listings";
 import { enforceQueueOrRedirect } from "@/lib/queue/guard";
+import { buildEventBreadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { ListingReviewClient } from "./ListingReviewClient";
 
 interface ReviewPageProps {
@@ -39,7 +41,14 @@ export default async function ListingReviewPage({ params, searchParams }: Review
     redirect(getEventTicketHref(event));
   }
 
+  const sectionTitle = listing.section_number
+    ? `Section ${listing.section_number}${listing.row_label ? ` · Row ${listing.row_label}` : ""}`
+    : listing.product_name ?? "Review listing";
+
   return (
-    <ListingReviewClient event={event} listing={listing} ticketCount={ticketCount} />
+    <>
+      <JsonLd data={buildEventBreadcrumbJsonLd(event, "review", sectionTitle)} />
+      <ListingReviewClient event={event} listing={listing} ticketCount={ticketCount} />
+    </>
   );
 }

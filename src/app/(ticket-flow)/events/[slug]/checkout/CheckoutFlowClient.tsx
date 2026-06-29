@@ -12,7 +12,10 @@ import { PriceLockBanner } from "@/components/tickets/PriceLockBanner";
 import { OrderSummaryCard } from "@/components/tickets/OrderSummaryCard";
 import { MobileCheckoutBar } from "@/components/tickets/MobileCheckoutBar";
 import { CryptoCheckoutPanel } from "@/components/crypto/CryptoCheckoutPanel";
+import { CheckoutTrustLinks } from "@/components/trust/CheckoutTrustLinks";
 import { Web3Provider } from "@/components/crypto/Web3Provider";
+import { trackCheckoutStart, trackReservationSubmit } from "@/lib/analytics/funnel";
+import { buildEventBreadcrumbs } from "@/lib/navigation/breadcrumbs";
 import { getEventTicketHref } from "@/lib/events/event-scarcity";
 import {
   clearCheckoutSession,
@@ -75,7 +78,20 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
       return;
     }
     setCheckout(session);
-  }, [event.slug, router]);
+
+    const total = session.items.reduce(
+      (sum, item) => sum + item.unitPrice * item.quantity,
+      0
+    );
+    trackCheckoutStart({
+      slug: event.slug,
+      matchNumber: event.match_number,
+      competitionSlug: event.competition?.slug ?? null,
+      itemCount: session.items.reduce((n, item) => n + item.quantity, 0),
+      total,
+      currency: session.currency,
+    });
+  }, [event, router]);
 
   if (!checkout) {
     return (
@@ -131,6 +147,15 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
       }
 
       if (paymentMethod === "crypto" && data.crypto) {
+        trackReservationSubmit({
+          slug: event.slug,
+          matchNumber: event.match_number,
+          competitionSlug: event.competition?.slug ?? null,
+          reference: data.reference as string,
+          paymentMethod: "crypto",
+          total: data.total as number,
+          currency: checkout.currency,
+        });
         setCryptoOrder({
           reference: data.reference as string,
           total: data.total as number,
@@ -142,9 +167,28 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
       clearCheckoutSession();
 
       if (data.checkoutUrl) {
+        trackReservationSubmit({
+          slug: event.slug,
+          matchNumber: event.match_number,
+          competitionSlug: event.competition?.slug ?? null,
+          reference: data.reference as string,
+          paymentMethod,
+          total: data.total as number | undefined,
+          currency: checkout.currency,
+        });
         window.location.href = data.checkoutUrl;
         return;
       }
+
+      trackReservationSubmit({
+        slug: event.slug,
+        matchNumber: event.match_number,
+        competitionSlug: event.competition?.slug ?? null,
+        reference: data.reference as string,
+        paymentMethod,
+        total: data.total as number | undefined,
+        currency: checkout.currency,
+      });
 
       router.push(`/order/${data.reference}/confirmation`);
     } catch (err) {
@@ -169,10 +213,12 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
         ? "checkout-details-form"
         : "checkout-payment-form";
 
+  const breadcrumbs = buildEventBreadcrumbs(event, "checkout");
+
   return (
     <Web3Provider>
     <div className="flex min-h-screen flex-col bg-slate-100">
-      <TicketFlowHeader event={event} showBackToTickets compact />
+      <TicketFlowHeader event={event} breadcrumbs={breadcrumbs} showBackToTickets compact />
 
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-4 py-6 pb-28 sm:px-6 sm:py-8 lg:flex-row lg:pb-8">
         <div className="flex-1 lg:order-1">
@@ -251,7 +297,7 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
-                    placeholder="+44 7700 900123"
+                    placeholder="+19177430001"
                     autoComplete="tel"
                     inputMode="tel"
                   />
@@ -359,6 +405,8 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
                 })}
               </div>
 
+              <CheckoutTrustLinks className="mt-6" />
+
               {error && (
                 <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                   {error}
@@ -380,6 +428,7 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
         <aside className="hidden w-full shrink-0 space-y-4 lg:block lg:w-[380px]">
           <PriceLockBanner />
           <OrderSummaryCard items={checkout.items} currency={checkout.currency} />
+          {!cryptoOrder && step === "payment" && <CheckoutTrustLinks />}
         </aside>
       </div>
 

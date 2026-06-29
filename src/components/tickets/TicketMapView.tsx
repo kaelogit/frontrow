@@ -31,6 +31,8 @@ interface TicketMapViewProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   className?: string;
+  /** Tighter padding for mobile bottom-sheet map */
+  compact?: boolean;
 }
 
 export function TicketMapView({
@@ -55,6 +57,7 @@ export function TicketMapView({
   onZoomIn,
   onZoomOut,
   className,
+  compact = false,
 }: TicketMapViewProps) {
   let mapBody: ReactNode = null;
 
@@ -127,7 +130,7 @@ export function TicketMapView({
           </button>
         </div>
       )}
-      <div className="h-full w-full p-2 sm:p-4">{mapBody}</div>
+      <div className={compact ? "h-full w-full p-0" : "h-full w-full p-2 sm:p-4"}>{mapBody}</div>
     </div>
   );
 }

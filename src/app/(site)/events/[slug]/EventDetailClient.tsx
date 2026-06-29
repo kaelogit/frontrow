@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Calendar, ChevronLeft, MapPin, Shield, Ticket } from "lucide-react";
+import { Calendar, MapPin, Shield, Ticket } from "lucide-react";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { TicketSelector } from "@/components/events/TicketSelector";
 import { MatchTeamsRow } from "@/components/events/MatchTeamsRow";
 import {
@@ -11,6 +12,8 @@ import {
   useTicketBrowserOpen,
 } from "@/components/tickets/TicketBrowserModal";
 import { getEventMatchDisplay } from "@/lib/events/match-display";
+import { buildEventBreadcrumbs } from "@/lib/navigation/breadcrumbs";
+import { trackEventView } from "@/lib/analytics/funnel";
 import { saveCheckoutSession } from "@/lib/checkout/storage";
 import type { EventWithRelations, TicketListing } from "@/types/database";
 import { resolveEventHeroImage } from "@/lib/images";
@@ -25,7 +28,16 @@ export function EventDetailClient({ event, listings = [] }: EventDetailClientPro
   const router = useRouter();
   const usesSeatMap = event.seat_map_enabled === true;
   const match = getEventMatchDisplay(event);
+  const breadcrumbs = buildEventBreadcrumbs(event);
   const { open: ticketsOpen, openBrowser, closeBrowser } = useTicketBrowserOpen(event.slug);
+
+  useEffect(() => {
+    trackEventView({
+      slug: event.slug,
+      matchNumber: event.match_number,
+      competitionSlug: event.competition?.slug ?? null,
+    });
+  }, [event.slug, event.match_number, event.competition?.slug]);
 
   const handleCheckout = (quantities: Record<string, number>) => {
     const items = Object.entries(quantities)
@@ -65,13 +77,7 @@ export function EventDetailClient({ event, listings = [] }: EventDetailClientPro
     <>
       <div className="bg-slate-50 px-4 py-8 sm:px-6">
         <div className="mx-auto max-w-7xl">
-          <Link
-            href="/events"
-            className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-sky-600"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            All events
-          </Link>
+          <Breadcrumbs items={breadcrumbs} className="mb-6" />
 
           <div className="grid gap-10 lg:grid-cols-5">
             <div className="lg:col-span-2">

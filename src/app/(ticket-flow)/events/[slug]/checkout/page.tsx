@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { getEventBySlug } from "@/lib/data/events";
 import { enforceQueueOrRedirect } from "@/lib/queue/guard";
+import { buildEventBreadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { CheckoutFlowClient } from "./CheckoutFlowClient";
 
 interface CheckoutPageProps {
@@ -22,5 +24,10 @@ export default async function EventCheckoutPage({ params }: CheckoutPageProps) {
 
   await enforceQueueOrRedirect(event);
 
-  return <CheckoutFlowClient event={event} />;
+  return (
+    <>
+      <JsonLd data={buildEventBreadcrumbJsonLd(event, "checkout")} />
+      <CheckoutFlowClient event={event} />
+    </>
+  );
 }

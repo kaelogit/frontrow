@@ -3,16 +3,11 @@ import { getEventBySlug } from "@/lib/data/events";
 import { getQueueToken, setQueueAdmission } from "@/lib/queue/cookies";
 import { getQueueStatus } from "@/lib/queue/store";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { RATE_LIMITS } from "@/lib/rate-limit-config";
 
 export async function GET(request: Request) {
   try {
-    const gate = await enforceRateLimit({
-      request,
-      id: "queue_status",
-      scope: "ip",
-      windowSeconds: 60,
-      limit: 60,
-    });
+    const gate = await enforceRateLimit({ request, ...RATE_LIMITS.queueStatus });
     if (!gate.ok) return gate.response;
 
     const { searchParams } = new URL(request.url);

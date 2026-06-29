@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { Smartphone, Printer, Clock, Mail, QrCode } from "lucide-react";
+import { Smartphone, Printer, Clock, Mail, QrCode, CalendarCheck } from "lucide-react";
+import { TrustMarketplaceNotice } from "@/components/trust/TrustMarketplaceNotice";
+import { RESERVATION_HOLD_HOURS } from "@/lib/constants";
 
 export const metadata = {
   title: "Ticket Delivery",
@@ -32,14 +34,28 @@ export default function DeliveryPage() {
   return (
     <div className="px-4 py-12 sm:px-6 sm:py-16">
       <div className="mx-auto max-w-3xl">
+        <TrustMarketplaceNotice className="mb-8" />
+
         <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
           Ticket delivery
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-slate-600">
-          All Frontrowly tickets are delivered electronically — fast, secure, and ready
-          for the venue. No physical shipping unless explicitly stated on a VIP or
-          hospitality package.
+          All Frontrowly tickets are delivered electronically — fast, secure, and ready for
+          the venue. We verify listings before confirmation; your e-ticket arrives by email
+          from <strong className="font-medium text-slate-800">tickets@frontrowly.com</strong>.
         </p>
+
+        <div className="mt-6 flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-5">
+          <CalendarCheck className="mt-0.5 h-6 w-6 shrink-0 text-emerald-600" />
+          <div className="text-sm leading-relaxed text-slate-700">
+            <p className="font-semibold text-slate-900">Reservation checkout</p>
+            <p className="mt-1">
+              If you requested a reservation, we email payment options within a few hours.
+              Your seats are held for {RESERVATION_HOLD_HOURS} hours while you complete payment.
+              Tickets are delivered after payment is confirmed.
+            </p>
+          </div>
+        </div>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-3">
           {methods.map(({ icon: Icon, title, description }) => (
@@ -61,16 +77,16 @@ export default function DeliveryPage() {
               <h2 className="font-semibold text-slate-900">When will I get my tickets?</h2>
               <ul className="mt-3 space-y-2 text-sm leading-relaxed text-slate-600">
                 <li>
-                  <strong className="text-slate-800">Most events:</strong> within 24 hours
-                  of order confirmation
+                  <strong className="text-slate-800">After payment confirmed:</strong> most
+                  e-tickets within 24 hours
                 </li>
                 <li>
-                  <strong className="text-slate-800">High-demand matches:</strong> delivery
-                  may be scheduled closer to the event — we&apos;ll email the expected date
+                  <strong className="text-slate-800">High-demand matches:</strong> delivery may
+                  be scheduled closer to the event — we&apos;ll email the expected date
                 </li>
                 <li>
-                  <strong className="text-slate-800">After purchase:</strong> check spam and
-                  promotions folders; add tickets@frontrowly.com to your contacts
+                  <strong className="text-slate-800">Check your inbox:</strong> add
+                  tickets@frontrowly.com to contacts; check spam and promotions folders
                 </li>
               </ul>
             </div>
@@ -81,17 +97,23 @@ export default function DeliveryPage() {
             <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-600 sm:text-base">
               <li>Arrive with the same name used at checkout if ID checks apply</li>
               <li>Have your QR ready with screen brightness up — avoid cracked or dim screens</li>
-              <li>Some venues require the original purchaser&apos;s ID — we&apos;ll note this in your email if applicable</li>
-              <li>International buyers: ensure your phone works offline or save a screenshot if advised in your delivery email</li>
+              <li>
+                Some venues require the original purchaser&apos;s ID — we&apos;ll note this in
+                your email if applicable
+              </li>
+              <li>
+                International buyers: save an offline copy of your ticket if advised in your
+                delivery email
+              </li>
             </ul>
           </div>
 
           <div>
             <h2 className="text-xl font-semibold text-slate-900">Hospitality & VIP</h2>
             <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
-              Premium packages may include separate lounge access instructions, wristbands,
-              or will-call pickup. Full details are sent with your confirmation. For VIP
-              enquiries before purchase, email{" "}
+              Premium packages may include separate lounge access instructions, wristbands, or
+              will-call pickup. Full details are sent with your confirmation. For VIP enquiries
+              before purchase, email{" "}
               <a href="mailto:vip@frontrowly.com" className="text-sky-600 hover:underline">
                 vip@frontrowly.com
               </a>
@@ -108,12 +130,16 @@ export default function DeliveryPage() {
                 <a href="mailto:support@frontrowly.com" className="text-sky-600 hover:underline">
                   support@frontrowly.com
                 </a>{" "}
-                with your order reference. If delivery is overdue per your confirmation
-                email, our{" "}
+                with your order reference. If delivery is overdue per your confirmation email,
+                our{" "}
                 <Link href="/guarantee" className="text-sky-600 hover:underline">
                   order guarantee
                 </Link>{" "}
-                applies.
+                applies. See our{" "}
+                <Link href="/refunds" className="text-sky-600 hover:underline">
+                  refund policy
+                </Link>{" "}
+                for cancelled events.
               </p>
             </div>
           </div>

@@ -14,6 +14,7 @@ import {
   WORLD_CUP_CITIES,
   WORLD_CUP_HUB_TABS,
   WORLD_CUP_STAGES,
+  WORLD_CUP_STAGE_CARDS,
   WORLD_CUP_TEAMS,
   filterEventsByHubTab,
   type WorldCupHubTab,
@@ -90,14 +91,29 @@ export function WorldCupHub({ events }: WorldCupHubProps) {
           </div>
         )}
 
+        {/* Browse by stage — All games tab */}
+        {tab === "all" && (
+          <div className="mt-10">
+            <h2 className="text-xl font-bold text-slate-900">Browse by stage</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Knockout rounds from the Round of 32 through the Final
+            </p>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {WORLD_CUP_STAGE_CARDS.map((item) => (
+                <HubGridCard key={item.slug} item={item} />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Teams grid */}
         {tab === "teams" && (
           <div className="mt-10">
             <h2 className="text-xl font-bold text-slate-900">Browse by national team</h2>
             <p className="mt-1 text-sm text-slate-600">
-              Find every match featuring your country
+              All 48 World Cup 2026 finalists
             </p>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {WORLD_CUP_TEAMS.map((item) => (
                 <HubGridCard key={item.slug} item={item} />
               ))}

@@ -1,5 +1,10 @@
-import { getCategoryImage } from "@/lib/images";
 import { stagePageHref } from "@/lib/marketing/world-cup-stages";
+import {
+  WORLD_CUP_CITY_CARDS,
+  WORLD_CUP_STAGE_CARDS,
+  WORLD_CUP_TEAM_CARDS,
+  type MarketingGridCard,
+} from "@/lib/marketing/world-cup-cards";
 
 export type WorldCupHubTab =
   | "all"
@@ -20,149 +25,12 @@ export const WORLD_CUP_HUB_TABS: { id: WorldCupHubTab; label: string }[] = [
   { id: "round-of-32", label: "Round of 32" },
 ];
 
-export interface HubGridItem {
-  slug: string;
-  title: string;
-  subtitle: string;
-  href: string;
-  image: string;
-  badge?: string;
-}
+/** @deprecated Use MarketingGridCard from world-cup-cards.ts */
+export type HubGridItem = MarketingGridCard;
 
-/** Host cities — dedicated city landing pages (item 9) */
-export const WORLD_CUP_CITIES: HubGridItem[] = [
-  {
-    slug: "vancouver",
-    title: "Vancouver",
-    subtitle: "BC Place Stadium",
-    href: "/world-cup-2026/vancouver",
-    image: getCategoryImage("world-cup-2026"),
-    badge: "Canada",
-  },
-  {
-    slug: "los-angeles",
-    title: "Los Angeles",
-    subtitle: "SoFi Stadium",
-    href: "/world-cup-2026/los-angeles",
-    image: getCategoryImage("world-cup-2026"),
-    badge: "USA",
-  },
-  {
-    slug: "new-york",
-    title: "New York / New Jersey",
-    subtitle: "MetLife Stadium · Final host",
-    href: "/world-cup-2026/new-york",
-    image: getCategoryImage("world-cup-2026"),
-    badge: "Final",
-  },
-  {
-    slug: "miami",
-    title: "Miami",
-    subtitle: "Hard Rock Stadium",
-    href: "/world-cup-2026/miami",
-    image: getCategoryImage("world-cup-2026"),
-    badge: "USA",
-  },
-  {
-    slug: "mexico-city",
-    title: "Mexico City",
-    subtitle: "Estadio Azteca",
-    href: "/world-cup-2026/mexico-city",
-    image: getCategoryImage("world-cup-2026"),
-    badge: "Mexico",
-  },
-  {
-    slug: "dallas",
-    title: "Dallas",
-    subtitle: "AT&T Stadium",
-    href: "/world-cup-2026/dallas",
-    image: getCategoryImage("world-cup-2026"),
-    badge: "USA",
-  },
-  {
-    slug: "atlanta",
-    title: "Atlanta",
-    subtitle: "Mercedes-Benz Stadium",
-    href: "/world-cup-2026/atlanta",
-    image: getCategoryImage("world-cup-2026"),
-    badge: "USA",
-  },
-  {
-    slug: "seattle",
-    title: "Seattle",
-    subtitle: "Lumen Field",
-    href: "/world-cup-2026/seattle",
-    image: getCategoryImage("world-cup-2026"),
-    badge: "USA",
-  },
-];
-
-export const WORLD_CUP_TEAMS: HubGridItem[] = [
-  {
-    slug: "brazil",
-    title: "Brazil",
-    subtitle: "Seleção tickets",
-    href: "/events?competition=world-cup-2026&search=Brazil",
-    image: getCategoryImage("world-cup-2026"),
-    badge: "🇧🇷",
-  },
-  {
-    slug: "belgium",
-    title: "Belgium",
-    subtitle: "Red Devils",
-    href: "/events?competition=world-cup-2026&search=Belgium",
-    image: getCategoryImage("world-cup-2026"),
-    badge: "🇧🇪",
-  },
-  {
-    slug: "new-zealand",
-    title: "New Zealand",
-    subtitle: "All Blacks football",
-    href: "/events?competition=world-cup-2026&search=New+Zealand",
-    image: getCategoryImage("world-cup-2026"),
-    badge: "🇳🇿",
-  },
-  {
-    slug: "usa",
-    title: "USA",
-    subtitle: "Host nation",
-    href: "/events?competition=world-cup-2026&search=USA",
-    image: getCategoryImage("world-cup-2026"),
-    badge: "🇺🇸",
-  },
-  {
-    slug: "mexico",
-    title: "Mexico",
-    subtitle: "Host nation",
-    href: "/events?competition=world-cup-2026&search=Mexico",
-    image: getCategoryImage("world-cup-2026"),
-    badge: "🇲🇽",
-  },
-  {
-    slug: "england",
-    title: "England",
-    subtitle: "Three Lions",
-    href: "/events?competition=world-cup-2026&search=England",
-    image: getCategoryImage("world-cup-2026"),
-    badge: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-  },
-  {
-    slug: "germany",
-    title: "Germany",
-    subtitle: "Die Mannschaft",
-    href: "/events?competition=world-cup-2026&search=Germany",
-    image: getCategoryImage("world-cup-2026"),
-    badge: "🇩🇪",
-  },
-  {
-    slug: "scotland",
-    title: "Scotland",
-    subtitle: "Tartan Army",
-    href: "/events?competition=world-cup-2026&search=Scotland",
-    image: getCategoryImage("world-cup-2026"),
-    badge: "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
-  },
-];
+export const WORLD_CUP_CITIES = WORLD_CUP_CITY_CARDS;
+export const WORLD_CUP_TEAMS = WORLD_CUP_TEAM_CARDS;
+export { WORLD_CUP_STAGE_CARDS };
 
 export const WORLD_CUP_STAGES: Record<
   Exclude<WorldCupHubTab, "all" | "teams" | "cities">,
@@ -191,7 +59,7 @@ export const WORLD_CUP_STAGES: Record<
     title: "Round of 32",
     description: "The expanded knockout bracket — 48 teams, 32 places in the Round of 16.",
     href: stagePageHref("round-of-32"),
-    searchTerms: /round of 32|R32|group stage|group [a-l]/i,
+    searchTerms: /round of 32|R32/i,
   },
 };
 

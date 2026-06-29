@@ -3,10 +3,11 @@
 import { getStadiumMapDefinition } from "@/lib/stadium/registry";
 import {
   GENERIC_BOWL_PITCH,
+  GENERIC_BOWL_PITCH_CIRCLE,
   GENERIC_BOWL_VIEWBOX,
 } from "@/lib/stadium/generic-bowl-layout";
 import { StadiumMapCanvas } from "@/components/stadium/StadiumMapCanvas";
-import { PitchMarkings } from "@/components/stadium/PitchMarkings";
+import { CircularPitchMarkings, PitchMarkings } from "@/components/stadium/PitchMarkings";
 import type { PitchRect, SectionGeometry } from "@/lib/stadium/types";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,8 @@ interface StadiumMapProps {
   mapName?: string;
   viewBox?: string;
   pitch?: PitchRect;
+  /** Circular pitch for flat top-down generic bowl maps */
+  pitchCircle?: { cx: number; cy: number; r: number };
   availableSections: Set<string>;
   priceBySection: Map<string, number>;
   selectedSection: string | null;
@@ -32,6 +35,7 @@ export function StadiumMap({
   mapName,
   viewBox,
   pitch,
+  pitchCircle,
   availableSections,
   priceBySection,
   selectedSection,
@@ -43,6 +47,8 @@ export function StadiumMap({
   const definition = getStadiumMapDefinition(mapSlug);
   const geometry = geometryOverride ?? definition?.geometry;
   const resolvedPitch = pitch ?? definition?.pitch ?? GENERIC_BOWL_PITCH;
+  const resolvedPitchCircle =
+    pitchCircle ?? (geometryOverride ? GENERIC_BOWL_PITCH_CIRCLE : undefined);
   const resolvedViewBox = viewBox ?? definition?.viewBox ?? GENERIC_BOWL_VIEWBOX;
   const resolvedName = mapName ?? definition?.name ?? "Stadium";
 
@@ -61,20 +67,38 @@ export function StadiumMap({
       >
         <rect width="800" height="640" fill="#f1f5f9" rx="12" />
 
-        <rect
-          x={resolvedPitch.x}
-          y={resolvedPitch.y}
-          width={resolvedPitch.width}
-          height={resolvedPitch.height}
-          fill="#15803d"
-          rx="4"
-        />
-        <PitchMarkings
-          x={resolvedPitch.x}
-          y={resolvedPitch.y}
-          width={resolvedPitch.width}
-          height={resolvedPitch.height}
-        />
+        {resolvedPitchCircle ? (
+          <>
+            <circle
+              cx={resolvedPitchCircle.cx}
+              cy={resolvedPitchCircle.cy}
+              r={resolvedPitchCircle.r}
+              fill="#15803d"
+            />
+            <CircularPitchMarkings
+              cx={resolvedPitchCircle.cx}
+              cy={resolvedPitchCircle.cy}
+              r={resolvedPitchCircle.r}
+            />
+          </>
+        ) : (
+          <>
+            <rect
+              x={resolvedPitch.x}
+              y={resolvedPitch.y}
+              width={resolvedPitch.width}
+              height={resolvedPitch.height}
+              fill="#15803d"
+              rx="4"
+            />
+            <PitchMarkings
+              x={resolvedPitch.x}
+              y={resolvedPitch.y}
+              width={resolvedPitch.width}
+              height={resolvedPitch.height}
+            />
+          </>
+        )}
 
         {geometry.map((sec) => {
           const hasStock = availableSections.has(sec.number);

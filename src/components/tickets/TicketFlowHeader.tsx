@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowLeft, Heart, Share2, X } from "lucide-react";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { Logo } from "@/components/brand/Logo";
+import type { BreadcrumbItem } from "@/lib/navigation/breadcrumbs";
 import { getEventMatchDisplay } from "@/lib/events/match-display";
 import { getEventTicketHref } from "@/lib/events/event-scarcity";
 import type { EventWithRelations } from "@/types/database";
@@ -8,6 +10,7 @@ import { formatEventDate } from "@/lib/utils";
 
 interface TicketFlowHeaderProps {
   event: EventWithRelations;
+  breadcrumbs?: BreadcrumbItem[];
   showBackToTickets?: boolean;
   onBack?: () => void;
   backLabel?: string;
@@ -18,6 +21,7 @@ interface TicketFlowHeaderProps {
 
 export function TicketFlowHeader({
   event,
+  breadcrumbs,
   showBackToTickets,
   onBack,
   backLabel = "Back",
@@ -87,6 +91,14 @@ export function TicketFlowHeader({
           </div>
         </div>
       )}
+
+      {breadcrumbs && breadcrumbs.length > 0 ? (
+        <div className="border-b border-slate-100 px-4 py-2 sm:px-6">
+          <div className="mx-auto max-w-[1800px]">
+            <Breadcrumbs items={breadcrumbs} />
+          </div>
+        </div>
+      ) : null}
 
       <div className="mx-auto flex max-w-[1800px] items-start gap-3 px-4 py-3 sm:px-6">
         {backControl}
