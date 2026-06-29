@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-/** BC Place anchor event — mock listings in dev when Supabase is not configured. */
-const TEST_EVENT_SLUG = "new-zealand-vs-belgium";
+/** Lumen Field R32 — mock listings in dev when Supabase is not configured. */
+const TEST_EVENT_SLUG = "world-cup-match-82";
 
 test.describe("Reservation checkout", () => {
   test.use({ viewport: { width: 390, height: 844 } });

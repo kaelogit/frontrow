@@ -1,7 +1,6 @@
 /**
- * Matches currently on sale at viagogo (30 events).
- * Group anchors 63–66 & 68, then knockout bracket from Match 80.
- * Matches 67 and 69–79 intentionally excluded (no marketplace inventory).
+ * Matches on sale at viagogo and shown on the public site.
+ * Catalog starts Match 80 (1 July 2026) — no group-stage or early R32 listings.
  */
 export interface ViagogoLiveMeta {
   matchNumber: number;
@@ -9,12 +8,10 @@ export interface ViagogoLiveMeta {
   hottest?: boolean;
 }
 
+/** First match number in the marketplace catalogue (Round of 32, 1 July). */
+export const WORLD_CUP_CATALOG_START_MATCH = 80;
+
 export const VIAGOGO_LIVE_MATCHES: ViagogoLiveMeta[] = [
-  { matchNumber: 63, scarcityPercent: 2 },
-  { matchNumber: 64, scarcityPercent: 1 },
-  { matchNumber: 65, scarcityPercent: 1 },
-  { matchNumber: 66, scarcityPercent: 1 },
-  { matchNumber: 68, scarcityPercent: 2 },
   { matchNumber: 80, scarcityPercent: null },
   { matchNumber: 81, scarcityPercent: null },
   { matchNumber: 82, scarcityPercent: null },
@@ -52,7 +49,10 @@ export function getViagogoLiveMeta(matchNumber: string | null | undefined): Viag
 }
 
 export function isViagogoLiveMatch(matchNumber: string | null | undefined): boolean {
-  return matchNumber != null && LIVE_BY_MATCH.has(matchNumber);
+  if (matchNumber == null) return false;
+  const n = Number(matchNumber);
+  if (!Number.isFinite(n) || n < WORLD_CUP_CATALOG_START_MATCH) return false;
+  return LIVE_BY_MATCH.has(matchNumber);
 }
 
 export function enrichEventWithViagogoLive<T extends { match_number?: string | null; scarcity_override?: number | null }>(

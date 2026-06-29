@@ -1,21 +1,30 @@
 "use client";
 
 import { getStadiumMapDefinition } from "@/lib/stadium/registry";
-import { getBowlProfile } from "@/lib/stadium/mini-map-bowl";
-import { approximateSectionPosition } from "@/lib/stadium/section-view-angle";
+import {
+  buildGenericSectionGeometry,
+  GENERIC_BOWL_PITCH,
+  GENERIC_BOWL_VIEWBOX,
+} from "@/lib/stadium/generic-bowl-layout";
+import { PitchMarkings } from "@/components/stadium/PitchMarkings";
 import { roundSvgPath } from "@/lib/stadium/svg-coords";
 import { cn } from "@/lib/utils";
 
 interface MiniMapProps {
   mapSlug?: string | null;
   sectionNumber: string | null;
+  /** All in-stock sections — used to build generic oval map when venue has no traced geometry */
+  allSections?: Iterable<string>;
   className?: string;
 }
 
-const FALLBACK_PITCH = { x: 280, y: 220, width: 240, height: 200 };
-
-/** Viagogo-style listing thumbnail — bowl silhouette + highlighted section or blue dot. */
-export function MiniMap({ mapSlug, sectionNumber, className }: MiniMapProps) {
+/** Listing-card thumbnail — same section-wedge style as the interactive stadium map. */
+export function MiniMap({
+  mapSlug,
+  sectionNumber,
+  allSections,
+  className,
+}: MiniMapProps) {
   if (!sectionNumber) {
     return (
       <div
@@ -30,13 +39,14 @@ export function MiniMap({ mapSlug, sectionNumber, className }: MiniMapProps) {
   }
 
   const definition = getStadiumMapDefinition(mapSlug);
-  const viewBox = definition?.viewBox ?? "0 0 800 640";
-  const pitch = definition?.pitch ?? FALLBACK_PITCH;
-  const bowl = getBowlProfile(mapSlug);
-  const section = definition?.geometry.find((g) => g.number === sectionNumber);
-  const anchor = section
-    ? { x: section.labelX, y: section.labelY }
-    : approximateSectionPosition(sectionNumber);
+  const sectionPool = allSections
+    ? [...new Set(allSections)]
+    : [sectionNumber];
+  const geometry =
+    definition?.geometry ??
+    buildGenericSectionGeometry(sectionPool.length ? sectionPool : [sectionNumber]);
+  const viewBox = definition?.viewBox ?? GENERIC_BOWL_VIEWBOX;
+  const pitch = definition?.pitch ?? GENERIC_BOWL_PITCH;
 
   return (
     <div
@@ -54,46 +64,35 @@ export function MiniMap({ mapSlug, sectionNumber, className }: MiniMapProps) {
       >
         <rect width="800" height="640" fill="#f1f5f9" />
 
-        {bowl.rings.map((radius) => (
-          <ellipse
-            key={radius}
-            cx={bowl.cx}
-            cy={bowl.cy}
-            rx={radius * bowl.sx}
-            ry={radius * bowl.sy}
-            fill="#e2e8f0"
-            stroke="#cbd5e1"
-            strokeWidth="1.5"
-          />
-        ))}
-
         <rect
           x={pitch.x}
           y={pitch.y}
           width={pitch.width}
           height={pitch.height}
-          fill="#16a34a"
-          rx="3"
+          fill="#15803d"
+          rx="4"
+        />
+        <PitchMarkings
+          x={pitch.x}
+          y={pitch.y}
+          width={pitch.width}
+          height={pitch.height}
+          strokeWidth={1.2}
         />
 
-        {section ? (
-          <path
-            d={roundSvgPath(section.path)}
-            fill="#0284c7"
-            stroke="#0369a1"
-            strokeWidth="1.25"
-          />
-        ) : (
-          <>
-            <circle
-              cx={anchor.x}
-              cy={anchor.y}
-              r={12}
-              fill="rgba(14, 165, 233, 0.25)"
+        {geometry.map((sec) => {
+          const isTarget = sec.number === sectionNumber;
+          return (
+            <path
+              key={sec.number}
+              d={roundSvgPath(sec.path)}
+              fill={isTarget ? "#0284c7" : "#7dd3fc"}
+              stroke={isTarget ? "#0369a1" : "#bae6fd"}
+              strokeWidth={isTarget ? 1.5 : 0.5}
+              opacity={isTarget ? 1 : 0.55}
             />
-            <circle cx={anchor.x} cy={anchor.y} r={5.5} fill="#0284c7" stroke="#fff" strokeWidth="1" />
-          </>
-        )}
+          );
+        })}
       </svg>
 
       <span className="absolute bottom-0.5 right-0.5 rounded bg-white/90 px-1 text-[9px] font-bold text-sky-700 shadow-sm">

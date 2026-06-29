@@ -1,4 +1,4 @@
--- 1K vs 3D/E/I/J/L — full match seed
+-- Colombia vs Ghana — full match seed
 -- Match 87 · 2026-07-03 · 20:30
 -- 355 ticket listings · Frontrowly prices = 10% below reference market
 -- Safe to re-run (clears prior listings for this event, then inserts)
@@ -19,10 +19,10 @@ INSERT INTO events (
 SELECT
   'world-cup-match-87',
   c.id,
-  NULL,
-  NULL,
+  ht.id,
+  at.id,
   v.id,
-  '1K vs 3D/E/I/J/L',
+  'Colombia vs Ghana',
   'Round of 32 · Match 87 · World Cup 2026',
   'FIFA World Cup 2026 Round of 32 at GEHA Field at Arrowhead Stadium, Kansas City. Marketplace listings from reference inventory.',
   '2026-07-03',
@@ -34,12 +34,17 @@ SELECT
   1,
   '87',
   '/images/events/match-87.jpg',
-  '1K',
-  '3D/E/I/J/L third place'
-FROM competitions c, venues v
+  NULL,
+  NULL
+FROM competitions c, teams ht, teams at, venues v
 WHERE c.slug = 'world-cup-2026'
+  AND ht.slug = 'colombia'
+  AND at.slug = 'ghana'
   AND v.slug = 'arrowhead-stadium'
 ON CONFLICT (slug) DO UPDATE SET
+  home_team_id = EXCLUDED.home_team_id,
+  away_team_id = EXCLUDED.away_team_id,
+  title = EXCLUDED.title,
   seat_map_enabled = EXCLUDED.seat_map_enabled,
   scarcity_override = EXCLUDED.scarcity_override,
   min_price = EXCLUDED.min_price,

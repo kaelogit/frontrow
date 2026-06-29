@@ -35,6 +35,16 @@ export function SocialProofSettingsForm({ settings }: SocialProofSettingsFormPro
         Show social proof bars
       </label>
 
+      <label className="flex items-center gap-2 text-sm text-zinc-300">
+        <input
+          type="checkbox"
+          name="purchaseToastsEnabled"
+          defaultChecked={settings.purchaseToastsEnabled}
+          className="rounded border-zinc-600"
+        />
+        Show live purchase toasts (bottom-left)
+      </label>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="text-zinc-400">Viewer count base</span>

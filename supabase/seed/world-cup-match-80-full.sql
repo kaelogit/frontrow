@@ -1,4 +1,4 @@
--- Group L winners vs Group E/H/I/J/K third place — full match seed
+-- England vs Congo DR — full match seed
 -- Match 80 · 2026-07-01 · 12:00
 -- 382 ticket listings · Frontrowly prices = 10% below reference market
 -- Safe to re-run (clears prior listings for this event, then inserts)
@@ -19,10 +19,10 @@ INSERT INTO events (
 SELECT
   'world-cup-match-80',
   c.id,
-  NULL,
-  NULL,
+  ht.id,
+  at.id,
   v.id,
-  'Group L winners vs Group E/H/I/J/K third place',
+  'England vs Congo DR',
   'Round of 32 · Match 80 · World Cup 2026',
   'FIFA World Cup 2026 Round of 32 at Mercedes-Benz Stadium, Atlanta. Marketplace listings from reference inventory.',
   '2026-07-01',
@@ -34,12 +34,17 @@ SELECT
   1,
   '80',
   '/images/events/match-80.jpg',
-  'Group L winners',
-  'Group E/H/I/J/K third place'
-FROM competitions c, venues v
+  NULL,
+  NULL
+FROM competitions c, teams ht, teams at, venues v
 WHERE c.slug = 'world-cup-2026'
+  AND ht.slug = 'england'
+  AND at.slug = 'congo-dr'
   AND v.slug = 'mercedes-benz-stadium'
 ON CONFLICT (slug) DO UPDATE SET
+  home_team_id = EXCLUDED.home_team_id,
+  away_team_id = EXCLUDED.away_team_id,
+  title = EXCLUDED.title,
   seat_map_enabled = EXCLUDED.seat_map_enabled,
   scarcity_override = EXCLUDED.scarcity_override,
   min_price = EXCLUDED.min_price,

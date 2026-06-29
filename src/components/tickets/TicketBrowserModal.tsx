@@ -6,7 +6,8 @@ import { Minus, Plus } from "lucide-react";
 import type { EventWithRelations, TicketListing } from "@/types/database";
 import type { SectionZone } from "@/lib/stadium/bc-place-sections";
 import { deriveZonesFromListings, filterListingsByDerivedZone } from "@/lib/stadium/derive-zones";
-import { getMapDisplayMode } from "@/lib/stadium/registry";
+import { buildGenericSectionGeometry } from "@/lib/stadium/generic-bowl-layout";
+import { getListingPreviewMapSlug, getMapDisplayMode } from "@/lib/stadium/registry";
 import { StadiumMap } from "@/components/stadium/StadiumMap";
 import { ReferenceStadiumMap, getReferenceMapImage } from "@/components/stadium/StadiumMapCanvas";
 import { SectionViewPreview } from "@/components/stadium/SectionViewPreview";
@@ -68,6 +69,7 @@ export function TicketBrowserModal({
   const [referenceMapFailed, setReferenceMapFailed] = useState(false);
 
   const mapSlug = event.venue?.stadium_map_slug ?? "bc-place";
+  const previewMapSlug = getListingPreviewMapSlug(event.venue?.stadium_map_slug);
   const venueSlug = event.venue?.slug ?? null;
   const baseMapDisplayMode = getMapDisplayMode(
     event.venue?.stadium_map_slug,
@@ -79,7 +81,6 @@ export function TicketBrowserModal({
       ? "zone"
       : baseMapDisplayMode;
   const showMapPanel = mapDisplayMode !== "none";
-  const showZoomControls = mapDisplayMode === "section" || mapDisplayMode === "reference";
   const referenceMapImage =
     getReferenceMapImage(mapSlug) ?? getReferenceMapImage(venueSlug);
 
@@ -94,9 +95,21 @@ export function TicketBrowserModal({
     };
   }, [open]);
 
+  const stockSections = useMemo(() => sectionsWithStock(listings), [listings]);
+  const useGenericSectionMap =
+    mapDisplayMode === "zone" && stockSections.size > 0;
+  const interactiveSectionMap =
+    mapDisplayMode === "section" || useGenericSectionMap;
+  const genericGeometry = useMemo(
+    () => buildGenericSectionGeometry(stockSections),
+    [stockSections]
+  );
+  const showZoomControls =
+    interactiveSectionMap || mapDisplayMode === "reference";
+
   const derivedZones = useMemo(
-    () => (mapDisplayMode === "zone" ? deriveZonesFromListings(listings) : []),
-    [listings, mapDisplayMode]
+    () => (mapDisplayMode === "zone" && !useGenericSectionMap ? deriveZonesFromListings(listings) : []),
+    [listings, mapDisplayMode, useGenericSectionMap]
   );
 
   const selectedDerivedZone = useMemo(
@@ -104,10 +117,10 @@ export function TicketBrowserModal({
     [derivedZones, selectedZoneId]
   );
 
-  const listingsScope = useMemo(
-    () => filterListingsByDerivedZone(listings, selectedDerivedZone),
-    [listings, selectedDerivedZone]
-  );
+  const listingsScope = useMemo(() => {
+    if (useGenericSectionMap) return listings;
+    return filterListingsByDerivedZone(listings, selectedDerivedZone);
+  }, [listings, selectedDerivedZone, useGenericSectionMap]);
 
   const globalRange = useMemo(() => listingMinMax(listingsScope), [listingsScope]);
   const [priceMin, setPriceMin] = useState<number | null>(null);
@@ -172,7 +185,6 @@ export function TicketBrowserModal({
     histRange?.max ?? 1000
   );
 
-  const stockSections = useMemo(() => sectionsWithStock(listings), [listings]);
   const priceBySection = useMemo(() => minPriceBySection(listings), [listings]);
   const scarcity = event.scarcity_override ?? scarcityPercent(listings);
 
@@ -348,7 +360,7 @@ export function TicketBrowserModal({
               )}
             </div>
 
-            {selectedSection && mapDisplayMode === "section" && (
+            {selectedSection && interactiveSectionMap && (
               <button
                 type="button"
                 onClick={() => setSelectedSection(null)}
@@ -364,7 +376,7 @@ export function TicketBrowserModal({
                   View from seat
                 </p>
                 <SectionViewPreview
-                  mapSlug={mapSlug}
+                  mapSlug={previewMapSlug}
                   sectionNumber={highlightedSection}
                   variant="panel"
                   className="min-h-[140px]"
@@ -372,7 +384,7 @@ export function TicketBrowserModal({
               </div>
             )}
 
-            {mapDisplayMode === "section" && !highlightedSection && (
+            {interactiveSectionMap && !highlightedSection && (
               <p className="absolute left-4 bottom-4 z-10 hidden rounded-full bg-white/90 px-3 py-1 text-xs text-slate-600 shadow-sm sm:block">
                 Hover a section for pricing · click to filter
               </p>
@@ -382,6 +394,20 @@ export function TicketBrowserModal({
               {mapDisplayMode === "section" ? (
                 <StadiumMap
                   mapSlug={mapSlug}
+                  availableSections={stockSections}
+                  priceBySection={priceBySection}
+                  selectedSection={selectedSection}
+                  highlightedSection={highlightedSection}
+                  onSectionClick={(s) =>
+                    setSelectedSection((prev) => (prev === s ? null : s))
+                  }
+                  onSectionHover={setHighlightedSection}
+                  zoom={zoom}
+                />
+              ) : useGenericSectionMap ? (
+                <StadiumMap
+                  geometryOverride={genericGeometry}
+                  mapName={event.venue?.name ?? "Stadium"}
                   availableSections={stockSections}
                   priceBySection={priceBySection}
                   selectedSection={selectedSection}
@@ -435,7 +461,8 @@ export function TicketBrowserModal({
                 currency={event.currency}
                 ticketCount={ticketCount}
                 venueAbbrev={venueAbbrev}
-                mapSlug={mapSlug}
+                mapSlug={previewMapSlug}
+                allSections={stockSections}
                 isBestDeal={listing.id === bestDealId && discountPercent(listing) > 0}
                 onView={handleViewListing}
                 onHover={setHighlightedSection}

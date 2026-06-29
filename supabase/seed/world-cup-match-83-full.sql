@@ -1,4 +1,4 @@
--- Group K runners-up vs Group L runners-up — full match seed
+-- Portugal vs Croatia — full match seed
 -- Match 83 · 2026-07-02 · 19:00
 -- 148 ticket listings · Frontrowly prices = 10% below reference market
 -- Safe to re-run (clears prior listings for this event, then inserts)
@@ -19,10 +19,10 @@ INSERT INTO events (
 SELECT
   'world-cup-match-83',
   c.id,
-  NULL,
-  NULL,
+  ht.id,
+  at.id,
   v.id,
-  'Group K runners-up vs Group L runners-up',
+  'Portugal vs Croatia',
   'Round of 32 · Match 83 · World Cup 2026',
   'FIFA World Cup 2026 Round of 32 at BMO Field, Toronto. Marketplace listings from reference inventory.',
   '2026-07-02',
@@ -34,12 +34,17 @@ SELECT
   1,
   '83',
   '/images/events/match-83.jpg',
-  'Group K runners-up',
-  'Group L runners-up'
-FROM competitions c, venues v
+  NULL,
+  NULL
+FROM competitions c, teams ht, teams at, venues v
 WHERE c.slug = 'world-cup-2026'
+  AND ht.slug = 'portugal'
+  AND at.slug = 'croatia'
   AND v.slug = 'bmo-field'
 ON CONFLICT (slug) DO UPDATE SET
+  home_team_id = EXCLUDED.home_team_id,
+  away_team_id = EXCLUDED.away_team_id,
+  title = EXCLUDED.title,
   seat_map_enabled = EXCLUDED.seat_map_enabled,
   scarcity_override = EXCLUDED.scarcity_override,
   min_price = EXCLUDED.min_price,

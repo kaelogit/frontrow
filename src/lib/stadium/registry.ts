@@ -88,6 +88,14 @@ export function getStadiumMapDefinition(
   return DEFINITIONS[slug] ?? null;
 }
 
+/** Map slug for listing thumbnails — only when we have traced section geometry. */
+export function getListingPreviewMapSlug(
+  stadiumMapSlug: string | null | undefined
+): string | null {
+  if (!stadiumMapSlug || !(stadiumMapSlug in DEFINITIONS)) return null;
+  return stadiumMapSlug;
+}
+
 export function listStadiumMapSlugs(): string[] {
   return Object.keys(DEFINITIONS);
 }

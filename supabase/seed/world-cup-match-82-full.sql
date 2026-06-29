@@ -1,4 +1,4 @@
--- Group G winners vs Group A/E/H/I/J third place — full match seed
+-- Belgium vs Senegal — full match seed
 -- Match 82 · 2026-07-01 · 13:00
 -- 295 ticket listings · Frontrowly prices = 10% below reference market
 -- Safe to re-run (clears prior listings for this event, then inserts)
@@ -19,10 +19,10 @@ INSERT INTO events (
 SELECT
   'world-cup-match-82',
   c.id,
-  NULL,
-  NULL,
+  ht.id,
+  at.id,
   v.id,
-  'Group G winners vs Group A/E/H/I/J third place',
+  'Belgium vs Senegal',
   'Round of 32 · Match 82 · World Cup 2026',
   'FIFA World Cup 2026 Round of 32 at Lumen Field, Seattle. Marketplace listings from reference inventory.',
   '2026-07-01',
@@ -34,12 +34,17 @@ SELECT
   1,
   '82',
   '/images/events/match-82.jpg',
-  'Group G winners',
-  'Group A/E/H/I/J third place'
-FROM competitions c, venues v
+  NULL,
+  NULL
+FROM competitions c, teams ht, teams at, venues v
 WHERE c.slug = 'world-cup-2026'
+  AND ht.slug = 'belgium'
+  AND at.slug = 'senegal'
   AND v.slug = 'lumen-field'
 ON CONFLICT (slug) DO UPDATE SET
+  home_team_id = EXCLUDED.home_team_id,
+  away_team_id = EXCLUDED.away_team_id,
+  title = EXCLUDED.title,
   seat_map_enabled = EXCLUDED.seat_map_enabled,
   scarcity_override = EXCLUDED.scarcity_override,
   min_price = EXCLUDED.min_price,

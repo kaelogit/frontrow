@@ -1,7 +1,9 @@
-import type { EventWithRelations } from "@/types/database";
+import type { EventWithRelations, Venue } from "@/types/database";
 import { SITE_NAME, SITE_URL } from "@/lib/constants";
 import { absoluteUrl } from "@/lib/site-metadata";
 import { buildEventSeoDescription } from "@/lib/seo/event-metadata";
+import { buildAggregateRatingJsonLd } from "@/lib/seo/marketplace-rating";
+import { countryToIso, getVenueGeo } from "@/lib/seo/venue-geo";
 
 type JsonLdObject = Record<string, unknown>;
 
@@ -30,7 +32,76 @@ function offerAvailability(status: EventWithRelations["status"]): string {
   return "https://schema.org/InStock";
 }
 
-/** Schema.org SportsEvent for Google rich results */
+function buildSellerOrganization(): JsonLdObject {
+  return {
+    "@type": "Organization",
+    name: SITE_NAME,
+    url: SITE_URL,
+    aggregateRating: buildAggregateRatingJsonLd(),
+  };
+}
+
+function buildVenueLocation(venue: Venue): JsonLdObject {
+  const geo = getVenueGeo(venue.slug);
+  const countryCode = countryToIso(venue.country);
+
+  const location: JsonLdObject = {
+    "@type": "StadiumOrArena",
+    name: venue.name,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: venue.city,
+      addressCountry: countryCode ?? venue.country,
+    },
+  };
+
+  if (venue.capacity) {
+    location.maximumAttendeeCapacity = venue.capacity;
+  }
+
+  if (geo) {
+    location.geo = {
+      "@type": "GeoCoordinates",
+      latitude: geo.latitude,
+      longitude: geo.longitude,
+    };
+  }
+
+  return location;
+}
+
+function buildTicketOffer(event: EventWithRelations, url: string): JsonLdObject {
+  return {
+    "@type": "Offer",
+    name: `Tickets for ${event.title}`,
+    url,
+    price: event.min_price,
+    priceCurrency: event.currency,
+    availability: offerAvailability(event.status),
+    validFrom: new Date().toISOString().slice(0, 10),
+    itemCondition: "https://schema.org/NewCondition",
+    category: "Event Tickets",
+    seller: buildSellerOrganization(),
+  };
+}
+
+function buildPerformers(event: EventWithRelations): JsonLdObject[] | undefined {
+  const performers: JsonLdObject[] = [];
+
+  const home = event.home_team?.name ?? event.home_team_label;
+  const away = event.away_team?.name ?? event.away_team_label;
+
+  if (home) {
+    performers.push({ "@type": "SportsTeam", name: home });
+  }
+  if (away) {
+    performers.push({ "@type": "SportsTeam", name: away });
+  }
+
+  return performers.length ? performers : undefined;
+}
+
+/** Schema.org SportsEvent with venue geo, ticket offers, and seller rating */
 export function buildSportsEventJsonLd(
   event: EventWithRelations,
   imagePath: string
@@ -56,49 +127,14 @@ export function buildSportsEventJsonLd(
   };
 
   if (event.venue) {
-    sportsEvent.location = {
-      "@type": "Place",
-      name: event.venue.name,
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: event.venue.city,
-        addressCountry: event.venue.country,
-      },
-    };
+    sportsEvent.location = buildVenueLocation(event.venue);
   }
 
   if (event.min_price != null && event.min_price > 0 && event.status !== "cancelled") {
-    sportsEvent.offers = {
-      "@type": "Offer",
-      url,
-      price: event.min_price,
-      priceCurrency: event.currency,
-      availability: offerAvailability(event.status),
-      seller: {
-        "@type": "Organization",
-        name: SITE_NAME,
-        url: SITE_URL,
-      },
-    };
+    sportsEvent.offers = buildTicketOffer(event, url);
   }
 
   return sportsEvent;
-}
-
-function buildPerformers(event: EventWithRelations): JsonLdObject[] | undefined {
-  const performers: JsonLdObject[] = [];
-
-  const home = event.home_team?.name ?? event.home_team_label;
-  const away = event.away_team?.name ?? event.away_team_label;
-
-  if (home) {
-    performers.push({ "@type": "SportsTeam", name: home });
-  }
-  if (away) {
-    performers.push({ "@type": "SportsTeam", name: away });
-  }
-
-  return performers.length ? performers : undefined;
 }
 
 /** BreadcrumbList for event detail pages */
@@ -134,6 +170,19 @@ export function buildEventBreadcrumbJsonLd(
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: items,
+  };
+}
+
+/** Standalone StadiumOrArena node (optional supplement for venue-heavy pages) */
+export function buildVenueJsonLd(venue: Venue, eventUrl?: string): JsonLdObject {
+  const geo = getVenueGeo(venue.slug);
+  return {
+    "@context": "https://schema.org",
+    ...buildVenueLocation(venue),
+    ...(eventUrl ? { url: eventUrl } : {}),
+    ...(geo
+      ? { hasMap: `https://www.google.com/maps?q=${geo.latitude},${geo.longitude}` }
+      : {}),
   };
 }
 
@@ -187,5 +236,16 @@ export function buildBreadcrumbJsonLd(
       name: item.name,
       item: absoluteUrl(item.path),
     })),
+  };
+}
+
+/** Organization + aggregate rating for site trust signals */
+export function buildMarketplaceOrganizationJsonLd(): JsonLdObject {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: SITE_NAME,
+    url: SITE_URL,
+    aggregateRating: buildAggregateRatingJsonLd(),
   };
 }

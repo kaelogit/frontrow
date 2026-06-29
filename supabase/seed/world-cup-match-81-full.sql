@@ -1,4 +1,4 @@
--- Group D winners vs Group B/E/F/I/J third place — full match seed
+-- United States vs Bosnia and Herzegovina — full match seed
 -- Match 81 · 2026-07-01 · 17:00
 -- 355 ticket listings · Frontrowly prices = 10% below reference market
 -- Safe to re-run (clears prior listings for this event, then inserts)
@@ -19,10 +19,10 @@ INSERT INTO events (
 SELECT
   'world-cup-match-81',
   c.id,
-  NULL,
-  NULL,
+  ht.id,
+  at.id,
   v.id,
-  'Group D winners vs Group B/E/F/I/J third place',
+  'United States vs Bosnia and Herzegovina',
   'Round of 32 · Match 81 · World Cup 2026',
   'FIFA World Cup 2026 Round of 32 at Levi''s Stadium, Santa Clara. Marketplace listings from reference inventory.',
   '2026-07-01',
@@ -34,12 +34,17 @@ SELECT
   1,
   '81',
   '/images/events/match-81.jpg',
-  'Group D winners',
-  'Group B/E/F/I/J third place'
-FROM competitions c, venues v
+  NULL,
+  NULL
+FROM competitions c, teams ht, teams at, venues v
 WHERE c.slug = 'world-cup-2026'
+  AND ht.slug = 'usa'
+  AND at.slug = 'bosnia-herzegovina'
   AND v.slug = 'levis-stadium'
 ON CONFLICT (slug) DO UPDATE SET
+  home_team_id = EXCLUDED.home_team_id,
+  away_team_id = EXCLUDED.away_team_id,
+  title = EXCLUDED.title,
   seat_map_enabled = EXCLUDED.seat_map_enabled,
   scarcity_override = EXCLUDED.scarcity_override,
   min_price = EXCLUDED.min_price,

@@ -1,4 +1,4 @@
--- Australia vs 2G — full match seed
+-- Australia vs Egypt — full match seed
 -- Match 88 · 2026-07-03 · 13:00
 -- 423 ticket listings · Frontrowly prices = 10% below reference market
 -- Safe to re-run (clears prior listings for this event, then inserts)
@@ -19,10 +19,10 @@ INSERT INTO events (
 SELECT
   'world-cup-match-88',
   c.id,
-  NULL,
-  NULL,
+  ht.id,
+  at.id,
   v.id,
-  'Australia vs 2G',
+  'Australia vs Egypt',
   'Round of 32 · Match 88 · World Cup 2026',
   'FIFA World Cup 2026 Round of 32 at AT&T Stadium, Arlington. Marketplace listings from reference inventory.',
   '2026-07-03',
@@ -34,12 +34,17 @@ SELECT
   1,
   '88',
   '/images/events/match-88.jpg',
-  'Australia',
-  '2G'
-FROM competitions c, venues v
+  NULL,
+  NULL
+FROM competitions c, teams ht, teams at, venues v
 WHERE c.slug = 'world-cup-2026'
+  AND ht.slug = 'australia'
+  AND at.slug = 'egypt'
   AND v.slug = 'att-stadium'
 ON CONFLICT (slug) DO UPDATE SET
+  home_team_id = EXCLUDED.home_team_id,
+  away_team_id = EXCLUDED.away_team_id,
+  title = EXCLUDED.title,
   seat_map_enabled = EXCLUDED.seat_map_enabled,
   scarcity_override = EXCLUDED.scarcity_override,
   min_price = EXCLUDED.min_price,

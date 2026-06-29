@@ -1,4 +1,4 @@
--- Argentina vs 2H — full match seed
+-- Argentina vs Cabo Verde — full match seed
 -- Match 86 · 2026-07-03 · 18:00
 -- 243 ticket listings · Frontrowly prices = 10% below reference market
 -- Safe to re-run (clears prior listings for this event, then inserts)
@@ -19,10 +19,10 @@ INSERT INTO events (
 SELECT
   'world-cup-match-86',
   c.id,
-  NULL,
-  NULL,
+  ht.id,
+  at.id,
   v.id,
-  'Argentina vs 2H',
+  'Argentina vs Cabo Verde',
   'Round of 32 · Match 86 · World Cup 2026',
   'FIFA World Cup 2026 Round of 32 at Hard Rock Stadium, Miami Gardens. Marketplace listings from reference inventory.',
   '2026-07-03',
@@ -34,12 +34,17 @@ SELECT
   1,
   '86',
   '/images/events/match-86.jpg',
-  'Argentina',
-  '2H'
-FROM competitions c, venues v
+  NULL,
+  NULL
+FROM competitions c, teams ht, teams at, venues v
 WHERE c.slug = 'world-cup-2026'
+  AND ht.slug = 'argentina'
+  AND at.slug = 'cabo-verde'
   AND v.slug = 'hard-rock-stadium'
 ON CONFLICT (slug) DO UPDATE SET
+  home_team_id = EXCLUDED.home_team_id,
+  away_team_id = EXCLUDED.away_team_id,
+  title = EXCLUDED.title,
   seat_map_enabled = EXCLUDED.seat_map_enabled,
   scarcity_override = EXCLUDED.scarcity_override,
   min_price = EXCLUDED.min_price,

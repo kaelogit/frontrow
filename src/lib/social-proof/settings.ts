@@ -3,6 +3,7 @@ import { hasSupabaseConfig } from "@/lib/supabase/admin";
 
 export interface SocialProofSettings {
   enabled: boolean;
+  purchaseToastsEnabled: boolean;
   viewersBase: number;
   viewersJitterPct: number;
   viewersLabel: string;
@@ -12,6 +13,7 @@ export interface SocialProofSettings {
 
 export const DEFAULT_SOCIAL_PROOF: SocialProofSettings = {
   enabled: true,
+  purchaseToastsEnabled: true,
   viewersBase: 204_807,
   viewersJitterPct: 4,
   viewersLabel: "World Cup events",
@@ -24,6 +26,7 @@ function parseSocialProof(raw: unknown): SocialProofSettings {
   const o = raw as Record<string, unknown>;
   return {
     enabled: o.enabled !== false,
+    purchaseToastsEnabled: o.purchaseToastsEnabled !== false,
     viewersBase:
       typeof o.viewersBase === "number" ? o.viewersBase : DEFAULT_SOCIAL_PROOF.viewersBase,
     viewersJitterPct:

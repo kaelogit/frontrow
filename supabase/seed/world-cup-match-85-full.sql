@@ -1,4 +1,4 @@
--- Switzerland vs 3E/F/G/I/J — full match seed
+-- Switzerland vs Algeria — full match seed
 -- Match 85 · 2026-07-02 · 20:00
 -- 309 ticket listings · Frontrowly prices = 10% below reference market
 -- Safe to re-run (clears prior listings for this event, then inserts)
@@ -19,10 +19,10 @@ INSERT INTO events (
 SELECT
   'world-cup-match-85',
   c.id,
-  NULL,
-  NULL,
+  ht.id,
+  at.id,
   v.id,
-  'Switzerland vs 3E/F/G/I/J',
+  'Switzerland vs Algeria',
   'Round of 32 · Match 85 · World Cup 2026',
   'FIFA World Cup 2026 Round of 32 at BC Place Stadium, Vancouver. Marketplace listings from reference inventory.',
   '2026-07-02',
@@ -34,12 +34,17 @@ SELECT
   1,
   '85',
   '/images/events/match-85.jpg',
-  'Switzerland',
-  '3E/F/G/I/J third place'
-FROM competitions c, venues v
+  NULL,
+  NULL
+FROM competitions c, teams ht, teams at, venues v
 WHERE c.slug = 'world-cup-2026'
+  AND ht.slug = 'switzerland'
+  AND at.slug = 'algeria'
   AND v.slug = 'bc-place-stadium'
 ON CONFLICT (slug) DO UPDATE SET
+  home_team_id = EXCLUDED.home_team_id,
+  away_team_id = EXCLUDED.away_team_id,
+  title = EXCLUDED.title,
   seat_map_enabled = EXCLUDED.seat_map_enabled,
   scarcity_override = EXCLUDED.scarcity_override,
   min_price = EXCLUDED.min_price,

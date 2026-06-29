@@ -1,4 +1,4 @@
--- Group H winners vs Group J runners-up — full match seed
+-- Spain vs Austria — full match seed
 -- Match 84 · 2026-07-02 · 12:00
 -- 400 ticket listings · Frontrowly prices = 10% below reference market
 -- Safe to re-run (clears prior listings for this event, then inserts)
@@ -19,10 +19,10 @@ INSERT INTO events (
 SELECT
   'world-cup-match-84',
   c.id,
-  NULL,
-  NULL,
+  ht.id,
+  at.id,
   v.id,
-  'Group H winners vs Group J runners-up',
+  'Spain vs Austria',
   'Round of 32 · Match 84 · World Cup 2026',
   'FIFA World Cup 2026 Round of 32 at SoFi Stadium, Inglewood. Marketplace listings from reference inventory.',
   '2026-07-02',
@@ -34,12 +34,17 @@ SELECT
   1,
   '84',
   '/images/events/match-84.jpg',
-  'Group H winners',
-  'Group J runners-up'
-FROM competitions c, venues v
+  NULL,
+  NULL
+FROM competitions c, teams ht, teams at, venues v
 WHERE c.slug = 'world-cup-2026'
+  AND ht.slug = 'spain'
+  AND at.slug = 'austria'
   AND v.slug = 'sofi-stadium'
 ON CONFLICT (slug) DO UPDATE SET
+  home_team_id = EXCLUDED.home_team_id,
+  away_team_id = EXCLUDED.away_team_id,
+  title = EXCLUDED.title,
   seat_map_enabled = EXCLUDED.seat_map_enabled,
   scarcity_override = EXCLUDED.scarcity_override,
   min_price = EXCLUDED.min_price,

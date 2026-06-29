@@ -14,6 +14,7 @@ export async function updateSocialProofAction(formData: FormData) {
   }
 
   const enabled = formData.get("enabled") === "on";
+  const purchaseToastsEnabled = formData.get("purchaseToastsEnabled") === "on";
   const viewersBase = Number(formData.get("viewersBase"));
   const viewersJitterPct = Number(formData.get("viewersJitterPct"));
   const viewersLabel = String(formData.get("viewersLabel") ?? "").trim();
@@ -32,6 +33,7 @@ export async function updateSocialProofAction(formData: FormData) {
 
   const value: SocialProofSettings = {
     enabled,
+    purchaseToastsEnabled,
     viewersBase: Math.max(0, Math.round(viewersBase)),
     viewersJitterPct: Math.min(20, Math.max(0, viewersJitterPct)),
     viewersLabel,

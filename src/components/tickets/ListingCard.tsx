@@ -9,6 +9,7 @@ interface ListingCardProps {
   ticketCount: number;
   venueAbbrev?: string;
   mapSlug?: string | null;
+  allSections?: Iterable<string>;
   onHover?: (section: string | null) => void;
   onView: (listing: TicketListing) => void;
   isBestDeal?: boolean;
@@ -19,6 +20,7 @@ export function ListingCard({
   currency,
   ticketCount,
   mapSlug,
+  allSections,
   onView,
   onHover,
   isBestDeal,
@@ -40,7 +42,11 @@ export function ListingCard({
       onMouseLeave={() => onHover?.(null)}
       className="flex w-full gap-3 rounded-xl border border-slate-200 bg-white p-4 transition hover:border-sky-200 hover:shadow-sm"
     >
-      <MiniMap mapSlug={mapSlug} sectionNumber={listing.section_number} />
+      <MiniMap
+        mapSlug={mapSlug}
+        sectionNumber={listing.section_number}
+        allSections={allSections}
+      />
 
       <div className="min-w-0 flex-1">
         <p className="font-semibold text-slate-900">{title}</p>
