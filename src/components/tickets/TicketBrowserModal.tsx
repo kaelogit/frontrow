@@ -2,17 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Minus, Plus } from "lucide-react";
 import type { EventWithRelations, TicketListing } from "@/types/database";
 import type { SectionZone } from "@/lib/stadium/bc-place-sections";
 import { deriveZonesFromListings, filterListingsByDerivedZone } from "@/lib/stadium/derive-zones";
 import { buildGenericSectionGeometry } from "@/lib/stadium/generic-bowl-layout";
 import { getListingPreviewMapSlug, getMapDisplayMode } from "@/lib/stadium/registry";
-import { StadiumMap } from "@/components/stadium/StadiumMap";
-import { ReferenceStadiumMap, getReferenceMapImage } from "@/components/stadium/StadiumMapCanvas";
+import { getReferenceMapImage } from "@/components/stadium/StadiumMapCanvas";
 import { SectionViewPreview } from "@/components/stadium/SectionViewPreview";
-import { ZoneOverviewMap } from "@/components/stadium/ZoneOverviewMap";
 import { ListingCard } from "@/components/tickets/ListingCard";
+import { MobileTicketMapSheet } from "@/components/tickets/MobileTicketMapSheet";
+import { TicketMapView } from "@/components/tickets/TicketMapView";
 import { QuantityModal } from "@/components/tickets/QuantityModal";
 import { TicketFlowHeader } from "@/components/tickets/TicketFlowHeader";
 import { ScarcityBanner } from "@/components/tickets/ScarcityBanner";
@@ -239,6 +238,71 @@ export function TicketBrowserModal({
     );
   };
 
+  const handleSectionClick = (s: string) => {
+    setSelectedSection((prev) => (prev === s ? null : s));
+  };
+
+  const mapViewProps = {
+    mapDisplayMode,
+    useGenericSectionMap,
+    mapSlug,
+    genericGeometry,
+    mapName: event.venue?.name ?? "Stadium",
+    stockSections,
+    priceBySection,
+    selectedSection,
+    highlightedSection,
+    onSectionClick: handleSectionClick,
+    onSectionHover: setHighlightedSection,
+    zoom,
+    referenceMapImage,
+    onReferenceMapError: () => setReferenceMapFailed(true),
+    derivedZones,
+    selectedZoneId,
+    onZoneSelect: (id: string | null) => {
+      setSelectedZoneId(id);
+      setVisibleCount(PAGE_SIZE);
+    },
+    showZoomControls,
+    onZoomIn: () => setZoom((z) => Math.min(2, z + 0.2)),
+    onZoomOut: () => setZoom((z) => Math.max(0.6, z - 0.2)),
+  };
+
+  const listingCards = (
+    <>
+      {visible.map((listing) => (
+        <ListingCard
+          key={listing.id}
+          listing={listing}
+          currency={event.currency}
+          ticketCount={ticketCount}
+          venueAbbrev={venueAbbrev}
+          mapSlug={previewMapSlug}
+          allSections={stockSections}
+          isBestDeal={listing.id === bestDealId && discountPercent(listing) > 0}
+          onView={handleViewListing}
+          onHover={setHighlightedSection}
+        />
+      ))}
+
+      {visibleCount < filtered.length && (
+        <button
+          type="button"
+          onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+          className="w-full rounded-xl border border-slate-200 bg-white py-3 text-sm font-semibold text-sky-600 hover:bg-sky-50"
+        >
+          Show more · Showing {visible.length} of {filtered.length}
+        </button>
+      )}
+
+      {filtered.length === 0 && (
+        <p className="py-12 text-center text-sm text-slate-500">
+          No tickets match your filters. Try resetting or changing quantity.
+        </p>
+      )}
+    </>
+  );
+
   const handleCategoryZone = (zone: SectionZone | null) => {
     setCategoryZone(zone);
     setVisibleCount(PAGE_SIZE);
@@ -324,6 +388,7 @@ export function TicketBrowserModal({
           resultCount={filtered.length}
           activeFilterCount={activeFilterCount}
           onOpenFilters={() => setShowMobileFilters(true)}
+          className={showMapPanel ? "hidden lg:block" : undefined}
         />
       </div>
 
@@ -336,154 +401,73 @@ export function TicketBrowserModal({
 
       <div className="mx-auto flex w-full max-w-[1800px] min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
         {showMapPanel && (
-          <div className="relative hidden min-h-0 flex-col overflow-hidden border-b border-slate-200 bg-white lg:flex lg:w-[min(48%,720px)] lg:shrink-0 lg:border-b-0 lg:border-r">
-            <div className="absolute right-4 bottom-4 z-10 flex flex-col gap-1 rounded-lg border border-slate-200 bg-white shadow-md">
-              {showZoomControls && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => setZoom((z) => Math.min(2, z + 0.2))}
-                    className="flex h-9 w-9 items-center justify-center hover:bg-slate-50"
-                    aria-label="Zoom in"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setZoom((z) => Math.max(0.6, z - 0.2))}
-                    className="flex h-9 w-9 items-center justify-center border-t border-slate-100 hover:bg-slate-50"
-                    aria-label="Zoom out"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                </>
+          <>
+            <div className="relative hidden min-h-0 flex-col overflow-hidden border-b border-slate-200 bg-white lg:flex lg:w-[min(48%,720px)] lg:shrink-0 lg:border-b-0 lg:border-r">
+              {selectedSection && interactiveSectionMap && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedSection(null)}
+                  className="absolute left-4 top-4 z-10 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-md"
+                >
+                  Clear section {selectedSection}
+                </button>
               )}
-            </div>
 
-            {selectedSection && interactiveSectionMap && (
-              <button
-                type="button"
-                onClick={() => setSelectedSection(null)}
-                className="absolute left-4 top-4 z-10 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-md"
-              >
-                Clear section {selectedSection}
-              </button>
-            )}
+              {highlightedSection && (
+                <div className="absolute left-4 top-4 z-10 w-[min(100%,220px)] rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
+                  <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                    View from seat
+                  </p>
+                  <SectionViewPreview
+                    mapSlug={previewMapSlug}
+                    sectionNumber={highlightedSection}
+                    variant="panel"
+                    className="min-h-[140px]"
+                  />
+                </div>
+              )}
 
-            {highlightedSection && (
-              <div className="absolute left-4 top-4 z-10 hidden w-[min(100%,220px)] rounded-xl border border-slate-200 bg-white p-2 shadow-lg sm:block">
-                <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                  View from seat
+              {interactiveSectionMap && !highlightedSection && (
+                <p className="absolute left-4 bottom-4 z-10 rounded-full bg-white/90 px-3 py-1 text-xs text-slate-600 shadow-sm">
+                  Hover a section for pricing · click to filter
                 </p>
-                <SectionViewPreview
-                  mapSlug={previewMapSlug}
-                  sectionNumber={highlightedSection}
-                  variant="panel"
-                  className="min-h-[140px]"
-                />
+              )}
+
+              <div className="min-h-0 flex-1 overflow-hidden">
+                <TicketMapView {...mapViewProps} />
               </div>
-            )}
 
-            {interactiveSectionMap && !highlightedSection && (
-              <p className="absolute left-4 bottom-4 z-10 hidden rounded-full bg-white/90 px-3 py-1 text-xs text-slate-600 shadow-sm sm:block">
-                Hover a section for pricing · click to filter
-              </p>
-            )}
-
-            <div className="min-h-0 flex-1 overflow-hidden p-4">
-              {mapDisplayMode === "section" ? (
-                <StadiumMap
-                  mapSlug={mapSlug}
-                  availableSections={stockSections}
-                  priceBySection={priceBySection}
-                  selectedSection={selectedSection}
-                  highlightedSection={highlightedSection}
-                  onSectionClick={(s) =>
-                    setSelectedSection((prev) => (prev === s ? null : s))
-                  }
-                  onSectionHover={setHighlightedSection}
-                  zoom={zoom}
-                />
-              ) : useGenericSectionMap ? (
-                <StadiumMap
-                  geometryOverride={genericGeometry}
-                  mapName={event.venue?.name ?? "Stadium"}
-                  availableSections={stockSections}
-                  priceBySection={priceBySection}
-                  selectedSection={selectedSection}
-                  highlightedSection={highlightedSection}
-                  onSectionClick={(s) =>
-                    setSelectedSection((prev) => (prev === s ? null : s))
-                  }
-                  onSectionHover={setHighlightedSection}
-                  zoom={zoom}
-                />
-              ) : mapDisplayMode === "reference" && referenceMapImage ? (
-                <ReferenceStadiumMap
-                  imageSrc={referenceMapImage}
-                  venueName={event.venue?.name ?? "Stadium"}
-                  zoom={zoom}
-                  onImageError={() => setReferenceMapFailed(true)}
-                />
-              ) : (
-                <ZoneOverviewMap
-                  zones={derivedZones}
-                  selectedZoneId={selectedZoneId}
-                  onZoneSelect={(id) => {
-                    setSelectedZoneId(id);
-                    setVisibleCount(PAGE_SIZE);
-                  }}
-                  venueName={event.venue?.name}
-                />
+              {mapDisplayMode === "section" && (
+                <CategoryChips selected={categoryZone} onSelect={handleCategoryZone} />
               )}
             </div>
 
-            {mapDisplayMode === "section" && (
-              <CategoryChips selected={categoryZone} onSelect={handleCategoryZone} />
-            )}
-          </div>
+            <MobileTicketMapSheet
+              map={<TicketMapView {...mapViewProps} />}
+              resultCount={filtered.length}
+              ticketCount={ticketCount}
+              onTicketCountChange={handleTicketCountChange}
+              activeFilterCount={activeFilterCount}
+              onOpenFilters={() => setShowMobileFilters(true)}
+              listRef={listRef}
+              onListScroll={handleListScroll}
+            >
+              {listingCards}
+            </MobileTicketMapSheet>
+          </>
         )}
 
         <div
           className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-slate-50 ${
-            showMapPanel ? "lg:border-r lg:border-slate-200" : ""
+            showMapPanel ? "hidden lg:flex lg:border-r lg:border-slate-200" : "flex"
           }`}
         >
           <div
-            ref={listRef}
-            onScroll={handleListScroll}
+            ref={showMapPanel ? undefined : listRef}
+            onScroll={showMapPanel ? undefined : handleListScroll}
             className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain p-3 sm:p-4"
           >
-            {visible.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-                currency={event.currency}
-                ticketCount={ticketCount}
-                venueAbbrev={venueAbbrev}
-                mapSlug={previewMapSlug}
-                allSections={stockSections}
-                isBestDeal={listing.id === bestDealId && discountPercent(listing) > 0}
-                onView={handleViewListing}
-                onHover={setHighlightedSection}
-              />
-            ))}
-
-            {visibleCount < filtered.length && (
-              <button
-                type="button"
-                onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-                className="w-full rounded-xl border border-slate-200 bg-white py-3 text-sm font-semibold text-sky-600 hover:bg-sky-50"
-              >
-                Show more · Showing {visible.length} of {filtered.length}
-              </button>
-            )}
-
-            {filtered.length === 0 && (
-              <p className="py-12 text-center text-sm text-slate-500">
-                No tickets match your filters. Try resetting or changing quantity.
-              </p>
-            )}
+            {listingCards}
           </div>
         </div>
 

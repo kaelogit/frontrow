@@ -26,6 +26,7 @@ interface TicketFilterBarProps {
   onOpenFilters: () => void;
   activeFilterCount: number;
   resultCount: number;
+  className?: string;
 }
 
 function TicketQuantitySelect({
@@ -226,9 +227,12 @@ export function TicketFilterBar({
   onOpenFilters,
   activeFilterCount,
   resultCount,
+  className,
 }: TicketFilterBarProps) {
   return (
-    <div className="shrink-0 border-b border-slate-200 bg-white px-3 py-2 sm:px-4">
+    <div
+      className={`shrink-0 border-b border-slate-200 bg-white px-3 py-2 sm:px-4 ${className ?? ""}`}
+    >
       {/* Mobile: 2 rows — ticket + price, then sort + filters */}
       <div className="flex flex-col gap-1.5 lg:hidden">
         <div className="grid grid-cols-2 gap-1.5">

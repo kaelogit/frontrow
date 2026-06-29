@@ -45,6 +45,28 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
     reference: string;
     total: number;
   } | null>(null);
+  const [cryptoPaymentsLive, setCryptoPaymentsLive] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/checkout/crypto/status")
+      .then((r) => r.json())
+      .then((data: { enabled?: boolean }) => {
+        if (!cancelled) setCryptoPaymentsLive(Boolean(data.enabled));
+      })
+      .catch(() => {
+        if (!cancelled) setCryptoPaymentsLive(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (cryptoPaymentsLive === false && paymentMethod === "crypto") {
+      setPaymentMethod("reservation");
+    }
+  }, [cryptoPaymentsLive, paymentMethod]);
 
   useEffect(() => {
     const session = readCheckoutSession();
@@ -290,10 +312,16 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
               <div className="mt-6 space-y-3">
                 {Object.values(PAYMENT_METHODS).map((method) => {
                   const Icon = paymentIcons[method.id];
-                  const isDisabled = !method.enabled;
+                  const isCrypto = method.id === "crypto";
+                  const cryptoReady = cryptoPaymentsLive === true;
+                  const cryptoChecking = isCrypto && cryptoPaymentsLive === null;
+                  const isDisabled = isCrypto ? !cryptoReady : !method.enabled;
                   const isSelected = !isDisabled && paymentMethod === method.id;
-                  const disabledLabel =
-                    "disabledLabel" in method ? method.disabledLabel : "Unavailable";
+                  const disabledLabel = cryptoChecking
+                    ? "Checking…"
+                    : "disabledLabel" in method
+                      ? method.disabledLabel
+                      : "Unavailable";
 
                   return (
                     <button

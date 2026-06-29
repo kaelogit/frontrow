@@ -1,4 +1,5 @@
 import { base, bsc, mainnet } from "viem/chains";
+import { CURRENCY_NAMES } from "@/lib/crypto/currency-meta";
 
 export const CRYPTO_PAYMENT_IDS = [
   "usdc-base",
@@ -7,18 +8,24 @@ export const CRYPTO_PAYMENT_IDS = [
   "eth-ethereum",
   "bnb-bsc",
   "usdt-bsc",
+  "usdt-tron",
+  "trx-tron",
   "sol-solana",
   "btc-bitcoin",
+  "ltc-litecoin",
+  "doge-dogecoin",
+  "ton-toncoin",
 ] as const;
 
 export type CryptoPaymentId = (typeof CRYPTO_PAYMENT_IDS)[number];
 
-export type PaymentRail = "evm" | "solana" | "bitcoin";
+export type PaymentRail = "evm" | "solana" | "utxo" | "tron" | "ton";
 
 export interface CryptoPaymentOption {
   id: CryptoPaymentId;
   symbol: string;
   label: string;
+  networkLabel: string;
   rail: PaymentRail;
   /** 1 USD = 1 token unit (USDC, USDT) */
   stablecoin: boolean;
@@ -27,14 +34,19 @@ export interface CryptoPaymentOption {
   chainName?: string;
   evmKind?: "native" | "erc20";
   contractAddress?: `0x${string}`;
+  /** TRC-20 contract on Tron (base58) */
+  tronContractAddress?: string;
   decimals: number;
+  /** UTXO chain explorer family */
+  utxoNetwork?: "bitcoin" | "litecoin" | "dogecoin";
 }
 
 export const CRYPTO_PAYMENT_OPTIONS: CryptoPaymentOption[] = [
   {
     id: "usdc-base",
     symbol: "USDC",
-    label: "USDC on Base (recommended · low fees)",
+    label: "USDC on Base",
+    networkLabel: "Base Network",
     rail: "evm",
     stablecoin: true,
     chainId: base.id,
@@ -47,6 +59,7 @@ export const CRYPTO_PAYMENT_OPTIONS: CryptoPaymentOption[] = [
     id: "usdc-ethereum",
     symbol: "USDC",
     label: "USDC on Ethereum",
+    networkLabel: "Ethereum Network ERC-20",
     rail: "evm",
     stablecoin: true,
     chainId: mainnet.id,
@@ -59,6 +72,7 @@ export const CRYPTO_PAYMENT_OPTIONS: CryptoPaymentOption[] = [
     id: "usdt-ethereum",
     symbol: "USDT",
     label: "USDT on Ethereum",
+    networkLabel: "Ethereum Network ERC-20",
     rail: "evm",
     stablecoin: true,
     chainId: mainnet.id,
@@ -71,6 +85,7 @@ export const CRYPTO_PAYMENT_OPTIONS: CryptoPaymentOption[] = [
     id: "eth-ethereum",
     symbol: "ETH",
     label: "ETH on Ethereum",
+    networkLabel: "Ethereum Network",
     rail: "evm",
     stablecoin: false,
     coingeckoId: "ethereum",
@@ -83,6 +98,7 @@ export const CRYPTO_PAYMENT_OPTIONS: CryptoPaymentOption[] = [
     id: "bnb-bsc",
     symbol: "BNB",
     label: "BNB on BNB Chain",
+    networkLabel: "BNB Smart Chain",
     rail: "evm",
     stablecoin: false,
     coingeckoId: "binancecoin",
@@ -95,6 +111,7 @@ export const CRYPTO_PAYMENT_OPTIONS: CryptoPaymentOption[] = [
     id: "usdt-bsc",
     symbol: "USDT",
     label: "USDT on BNB Chain",
+    networkLabel: "BNB Smart Chain BEP-20",
     rail: "evm",
     stablecoin: true,
     chainId: bsc.id,
@@ -104,9 +121,30 @@ export const CRYPTO_PAYMENT_OPTIONS: CryptoPaymentOption[] = [
     decimals: 18,
   },
   {
+    id: "usdt-tron",
+    symbol: "USDT",
+    label: "USDT on Tron",
+    networkLabel: "Tron Network TRC-20",
+    rail: "tron",
+    stablecoin: true,
+    tronContractAddress: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+    decimals: 6,
+  },
+  {
+    id: "trx-tron",
+    symbol: "TRX",
+    label: "TRX on Tron",
+    networkLabel: "Tron Network",
+    rail: "tron",
+    stablecoin: false,
+    coingeckoId: "tron",
+    decimals: 6,
+  },
+  {
     id: "sol-solana",
     symbol: "SOL",
     label: "SOL on Solana",
+    networkLabel: "Solana Network",
     rail: "solana",
     stablecoin: false,
     coingeckoId: "solana",
@@ -116,10 +154,44 @@ export const CRYPTO_PAYMENT_OPTIONS: CryptoPaymentOption[] = [
     id: "btc-bitcoin",
     symbol: "BTC",
     label: "BTC on Bitcoin",
-    rail: "bitcoin",
+    networkLabel: "Bitcoin Network",
+    rail: "utxo",
     stablecoin: false,
     coingeckoId: "bitcoin",
     decimals: 8,
+    utxoNetwork: "bitcoin",
+  },
+  {
+    id: "ltc-litecoin",
+    symbol: "LTC",
+    label: "LTC on Litecoin",
+    networkLabel: "Litecoin Network",
+    rail: "utxo",
+    stablecoin: false,
+    coingeckoId: "litecoin",
+    decimals: 8,
+    utxoNetwork: "litecoin",
+  },
+  {
+    id: "doge-dogecoin",
+    symbol: "DOGE",
+    label: "DOGE on Dogecoin",
+    networkLabel: "Dogecoin Network",
+    rail: "utxo",
+    stablecoin: false,
+    coingeckoId: "dogecoin",
+    decimals: 8,
+    utxoNetwork: "dogecoin",
+  },
+  {
+    id: "ton-toncoin",
+    symbol: "TON",
+    label: "TON on Toncoin",
+    networkLabel: "TON Network",
+    rail: "ton",
+    stablecoin: false,
+    coingeckoId: "the-open-network",
+    decimals: 9,
   },
 ];
 
@@ -131,21 +203,60 @@ export const EVM_CHAIN_IDS = [
   ),
 ];
 
+export interface CryptoCurrencyGroup {
+  symbol: string;
+  name: string;
+  options: CryptoPaymentOption[];
+}
+
 export function getCryptoPaymentOption(id: string): CryptoPaymentOption | undefined {
   return CRYPTO_PAYMENT_OPTIONS.find((o) => o.id === id);
 }
 
-export function getOptionsForConfiguredAddresses(config: {
+export interface CryptoAddressConfig {
   evm: boolean;
   solana: boolean;
   bitcoin: boolean;
-}): CryptoPaymentOption[] {
+  litecoin: boolean;
+  dogecoin: boolean;
+  tron: boolean;
+  ton: boolean;
+}
+
+export function getOptionsForConfiguredAddresses(
+  config: CryptoAddressConfig
+): CryptoPaymentOption[] {
   return CRYPTO_PAYMENT_OPTIONS.filter((o) => {
     if (o.rail === "evm") return config.evm;
     if (o.rail === "solana") return config.solana;
-    if (o.rail === "bitcoin") return config.bitcoin;
+    if (o.rail === "utxo") {
+      if (o.utxoNetwork === "bitcoin") return config.bitcoin;
+      if (o.utxoNetwork === "litecoin") return config.litecoin;
+      if (o.utxoNetwork === "dogecoin") return config.dogecoin;
+    }
+    if (o.rail === "tron") return config.tron;
+    if (o.rail === "ton") return config.ton;
     return false;
   });
+}
+
+export function groupOptionsByCurrency(
+  options: CryptoPaymentOption[]
+): CryptoCurrencyGroup[] {
+  const map = new Map<string, CryptoCurrencyGroup>();
+  for (const option of options) {
+    const existing = map.get(option.symbol);
+    if (existing) {
+      existing.options.push(option);
+    } else {
+      map.set(option.symbol, {
+        symbol: option.symbol,
+        name: CURRENCY_NAMES[option.symbol] ?? option.symbol,
+        options: [option],
+      });
+    }
+  }
+  return Array.from(map.values());
 }
 
 /** USD list price → smallest token units for stablecoins (1:1). */

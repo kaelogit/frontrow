@@ -9,7 +9,7 @@ function authorized(request: Request): boolean {
   return auth === `Bearer ${secret}`;
 }
 
-/** Release expired reservation holds — call from Vercel cron or external scheduler. */
+/** Release expired reservation holds — manual trigger; production runs via Supabase pg_cron. */
 export async function POST(request: Request) {
   if (!authorized(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

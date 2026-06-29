@@ -102,3 +102,33 @@ export function viewConePath(cone: ViewCone): string {
     "Z",
   ].join(" ");
 }
+
+/** Zoomed viewBox for listing thumbnails — keeps section anchor and pitch in frame. */
+export function cropViewBoxAroundSection(
+  anchor: { x: number; y: number },
+  pitch: PitchRect,
+  fullViewBox: string,
+  padding = 100
+): string {
+  const parts = fullViewBox.split(/\s+/).map(Number);
+  const [vbMinX, vbMinY, vbW, vbH] = parts;
+  const pcx = pitch.x + pitch.width / 2;
+  const pcy = pitch.y + pitch.height / 2;
+
+  let left = Math.min(anchor.x, pcx, pitch.x) - padding;
+  let top = Math.min(anchor.y, pcy, pitch.y) - padding;
+  let right = Math.max(anchor.x, pcx, pitch.x + pitch.width) + padding;
+  let bottom = Math.max(anchor.y, pcy, pitch.y + pitch.height) + padding;
+
+  let w = right - left;
+  let h = bottom - top;
+  const size = Math.max(w, h, 160);
+
+  let cropX = (left + right) / 2 - size / 2;
+  let cropY = (top + bottom) / 2 - size / 2;
+
+  cropX = Math.max(vbMinX, Math.min(cropX, vbMinX + vbW - size));
+  cropY = Math.max(vbMinY, Math.min(cropY, vbMinY + vbH - size));
+
+  return `${fmtSvgCoord(cropX)} ${fmtSvgCoord(cropY)} ${fmtSvgCoord(size)} ${fmtSvgCoord(size)}`;
+}

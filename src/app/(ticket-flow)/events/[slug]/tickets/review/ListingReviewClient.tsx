@@ -9,6 +9,8 @@ import { ScarcityBanner } from "@/components/tickets/ScarcityBanner";
 import { PriceLockBanner } from "@/components/tickets/PriceLockBanner";
 import { OrderSummaryCard } from "@/components/tickets/OrderSummaryCard";
 import { MobileCheckoutBar } from "@/components/tickets/MobileCheckoutBar";
+import { ListingTrustDetails } from "@/components/tickets/ListingTrustDetails";
+import { ExpandableEventDescription } from "@/components/tickets/ExpandableEventDescription";
 import { saveCheckoutSession } from "@/lib/checkout/storage";
 import { scarcityPercent } from "@/lib/tickets/filters";
 
@@ -135,12 +137,19 @@ export function ListingReviewClient({
             </ul>
           </div>
 
-          <div className="mt-4 rounded-xl border border-sky-100 bg-sky-50/60 p-4 text-sm lg:hidden">
-            <p className="font-semibold text-slate-900">100% Order Guarantee</p>
-            <p className="mt-1 text-slate-600">
-              We back every order so you can buy tickets with complete confidence.
-            </p>
-          </div>
+          {event.description && (
+            <ExpandableEventDescription
+              description={event.description}
+              className="mt-4"
+            />
+          )}
+
+          <ListingTrustDetails
+            event={event}
+            listing={listing}
+            ticketCount={ticketCount}
+            className="mt-4"
+          />
         </div>
 
         <aside className="hidden w-full shrink-0 space-y-4 lg:block lg:w-[380px]">
@@ -152,13 +161,6 @@ export function ListingReviewClient({
             showContinue
             onContinue={handleContinue}
           />
-
-          <div className="rounded-xl border border-sky-100 bg-sky-50/60 p-4 text-sm">
-            <p className="font-semibold text-slate-900">100% Order Guarantee</p>
-            <p className="mt-1 text-slate-600">
-              We back every order so you can buy tickets with complete confidence.
-            </p>
-          </div>
         </aside>
       </div>
 

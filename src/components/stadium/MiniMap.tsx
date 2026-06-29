@@ -7,6 +7,11 @@ import {
   GENERIC_BOWL_VIEWBOX,
 } from "@/lib/stadium/generic-bowl-layout";
 import { PitchMarkings } from "@/components/stadium/PitchMarkings";
+import {
+  buildViewCone,
+  cropViewBoxAroundSection,
+  viewConePath,
+} from "@/lib/stadium/section-view-angle";
 import { roundSvgPath } from "@/lib/stadium/svg-coords";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +23,7 @@ interface MiniMapProps {
   className?: string;
 }
 
-/** Listing-card thumbnail — same section-wedge style as the interactive stadium map. */
+/** Listing-card thumbnail — zoomed section wedge + view cone toward the pitch. */
 export function MiniMap({
   mapSlug,
   sectionNumber,
@@ -45,8 +50,17 @@ export function MiniMap({
   const geometry =
     definition?.geometry ??
     buildGenericSectionGeometry(sectionPool.length ? sectionPool : [sectionNumber]);
-  const viewBox = definition?.viewBox ?? GENERIC_BOWL_VIEWBOX;
+  const fullViewBox = definition?.viewBox ?? GENERIC_BOWL_VIEWBOX;
   const pitch = definition?.pitch ?? GENERIC_BOWL_PITCH;
+
+  const targetSection =
+    geometry.find((g) => g.number === sectionNumber) ??
+    buildGenericSectionGeometry([sectionNumber])[0];
+
+  const cone = buildViewCone(targetSection, pitch, 0.38);
+
+  const anchor = { x: targetSection.labelX, y: targetSection.labelY };
+  const croppedViewBox = cropViewBoxAroundSection(anchor, pitch, fullViewBox, 90);
 
   return (
     <div
@@ -57,7 +71,7 @@ export function MiniMap({
       aria-label={`Section ${sectionNumber} on stadium map`}
     >
       <svg
-        viewBox={viewBox}
+        viewBox={croppedViewBox}
         className="h-full w-full"
         preserveAspectRatio="xMidYMid meet"
         role="img"
@@ -69,7 +83,9 @@ export function MiniMap({
           y={pitch.y}
           width={pitch.width}
           height={pitch.height}
-          fill="#15803d"
+          fill="#4ade80"
+          stroke="#16a34a"
+          strokeWidth="2"
           rx="4"
         />
         <PitchMarkings
@@ -77,22 +93,33 @@ export function MiniMap({
           y={pitch.y}
           width={pitch.width}
           height={pitch.height}
-          strokeWidth={1.2}
+          strokeWidth={1.5}
         />
 
-        {geometry.map((sec) => {
-          const isTarget = sec.number === sectionNumber;
-          return (
-            <path
-              key={sec.number}
-              d={roundSvgPath(sec.path)}
-              fill={isTarget ? "#0284c7" : "#7dd3fc"}
-              stroke={isTarget ? "#0369a1" : "#bae6fd"}
-              strokeWidth={isTarget ? 1.5 : 0.5}
-              opacity={isTarget ? 1 : 0.55}
-            />
-          );
-        })}
+        <path
+          d={roundSvgPath(viewConePath(cone))}
+          fill="rgba(14, 165, 233, 0.55)"
+          stroke="#0369a1"
+          strokeWidth="2.5"
+        />
+
+        {targetSection.path ? (
+          <path
+            d={roundSvgPath(targetSection.path)}
+            fill="#0284c7"
+            stroke="#0c4a6e"
+            strokeWidth="3"
+          />
+        ) : (
+          <circle
+            cx={anchor.x}
+            cy={anchor.y}
+            r={18}
+            fill="#0284c7"
+            stroke="#0c4a6e"
+            strokeWidth="3"
+          />
+        )}
       </svg>
 
       <span className="absolute bottom-0.5 right-0.5 rounded bg-white/90 px-1 text-[9px] font-bold text-sky-700 shadow-sm">

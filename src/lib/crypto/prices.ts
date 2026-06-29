@@ -4,7 +4,16 @@ import {
   usdToVolatileAmount,
 } from "@/lib/crypto/payment-options";
 
-const COINGECKO_IDS = ["bitcoin", "ethereum", "binancecoin", "solana"] as const;
+const COINGECKO_IDS = [
+  "bitcoin",
+  "litecoin",
+  "dogecoin",
+  "ethereum",
+  "binancecoin",
+  "solana",
+  "tron",
+  "the-open-network",
+] as const;
 
 type CoinId = (typeof COINGECKO_IDS)[number];
 
@@ -26,9 +35,13 @@ async function fetchSpotPrices(): Promise<Record<CoinId, number>> {
   const data = (await res.json()) as Record<string, { usd?: number }>;
   const prices = {
     bitcoin: data.bitcoin?.usd ?? 0,
+    litecoin: data.litecoin?.usd ?? 0,
+    dogecoin: data.dogecoin?.usd ?? 0,
     ethereum: data.ethereum?.usd ?? 0,
     binancecoin: data.binancecoin?.usd ?? 0,
     solana: data.solana?.usd ?? 0,
+    tron: data.tron?.usd ?? 0,
+    "the-open-network": data["the-open-network"]?.usd ?? 0,
   };
   priceCache = { at: now, prices };
   return prices;
@@ -44,6 +57,13 @@ export interface CryptoQuote {
   priceUsd: number | null;
 }
 
+function formatQuoteAmount(raw: bigint, decimals: number): string {
+  const divisor = 10 ** decimals;
+  const value = Number(raw) / divisor;
+  const fracDigits = decimals === 18 ? 6 : decimals === 9 ? 6 : 8;
+  return value.toFixed(fracDigits).replace(/\.?0+$/, "") || value.toFixed(fracDigits);
+}
+
 export async function quoteCryptoPayment(
   option: CryptoPaymentOption,
   usdTotal: number
@@ -54,7 +74,7 @@ export async function quoteCryptoPayment(
       paymentId: option.id,
       symbol: option.symbol,
       label: option.label,
-      amount: (usdTotal).toFixed(2),
+      amount: usdTotal.toFixed(2),
       amountRaw: raw.toString(),
       usdTotal,
       priceUsd: 1,
@@ -69,18 +89,12 @@ export async function quoteCryptoPayment(
   }
 
   const raw = usdToVolatileAmount(usdTotal, priceUsd, option.decimals);
-  const amount =
-    option.decimals === 8
-      ? (Number(raw) / 1e8).toFixed(8)
-      : option.decimals === 9
-        ? (Number(raw) / 1e9).toFixed(6)
-        : (Number(raw) / 1e18).toFixed(6);
 
   return {
     paymentId: option.id,
     symbol: option.symbol,
     label: option.label,
-    amount,
+    amount: formatQuoteAmount(raw, option.decimals),
     amountRaw: raw.toString(),
     usdTotal,
     priceUsd,

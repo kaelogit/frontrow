@@ -1,14 +1,9 @@
 /**
- * Neutral match hero art for TBD / knockout fixtures.
+ * Match hero art for World Cup fixtures.
  * Output: public/images/events/match-{n}.jpg
  *
- * Rules (strict):
- * - NO national flags, team colors, club crests, or colored supporter scarves
- * - NO identifiable national-team kits or implied favorites
- * - YES: stadium architecture, empty pitch, floodlights, World Cup ball/trophy,
- *   generic football legends (formal wear / silhouette / back-to-camera)
- *
- * When both teams are confirmed later, regenerate with team-specific art.
+ * Neutral art (TBD knockouts): stadium only, no team colors.
+ * Team art (confirmed fixtures): split supporter sections with national colors.
  */
 
 export type MatchImageRound =
@@ -29,8 +24,19 @@ export interface MatchImageSpec {
   scene: string;
 }
 
-/** Matches with a generated neutral image on disk (update as batches complete) */
-export const GENERATED_NEUTRAL_MATCH_IMAGES = new Set<string>([
+export interface TeamMatchImageSpec {
+  matchNumber: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeColors: string;
+  awayColors: string;
+  venue: string;
+  city: string;
+  round: MatchImageRound;
+}
+
+/** Matches with generated team-specific art (confirmed teams) */
+export const TEAM_MATCH_IMAGES = new Set<string>([
   "80",
   "81",
   "82",
@@ -40,6 +46,10 @@ export const GENERATED_NEUTRAL_MATCH_IMAGES = new Set<string>([
   "86",
   "87",
   "88",
+]);
+
+/** Matches with neutral-only art on disk (TBD / knockout placeholders) */
+export const GENERATED_NEUTRAL_MATCH_IMAGES = new Set<string>([
   "89",
   "90",
   "91",
@@ -277,6 +287,113 @@ export const MATCH_IMAGE_SPECS: MatchImageSpec[] = [
   },
 ];
 
+export const TEAM_MATCH_SPECS: TeamMatchImageSpec[] = [
+  {
+    matchNumber: "80",
+    homeTeam: "England",
+    awayTeam: "Congo DR",
+    homeColors: "white jerseys with red Saint George cross, red and white scarves",
+    awayColors: "red jerseys with yellow and green accents, Congolese flag scarves",
+    venue: "Mercedes-Benz Stadium",
+    city: "Atlanta",
+    round: "round-of-32",
+  },
+  {
+    matchNumber: "81",
+    homeTeam: "United States",
+    awayTeam: "Bosnia and Herzegovina",
+    homeColors: "red white and blue jerseys, USA scarves",
+    awayColors: "blue jerseys with yellow accents, Bosnia flag scarves",
+    venue: "Levi's Stadium",
+    city: "Santa Clara",
+    round: "round-of-32",
+  },
+  {
+    matchNumber: "82",
+    homeTeam: "Belgium",
+    awayTeam: "Senegal",
+    homeColors: "red black and yellow jerseys, Belgian scarves",
+    awayColors: "white green and yellow jerseys, Senegalese scarves",
+    venue: "Lumen Field",
+    city: "Seattle",
+    round: "round-of-32",
+  },
+  {
+    matchNumber: "83",
+    homeTeam: "Portugal",
+    awayTeam: "Croatia",
+    homeColors: "red and green jerseys, Portuguese scarves",
+    awayColors: "red and white checkered jerseys, Croatian scarves",
+    venue: "BMO Field",
+    city: "Toronto",
+    round: "round-of-32",
+  },
+  {
+    matchNumber: "84",
+    homeTeam: "Spain",
+    awayTeam: "Austria",
+    homeColors: "red and yellow jerseys, Spanish scarves",
+    awayColors: "red and white jerseys, Austrian scarves",
+    venue: "SoFi Stadium",
+    city: "Inglewood",
+    round: "round-of-32",
+  },
+  {
+    matchNumber: "85",
+    homeTeam: "Switzerland",
+    awayTeam: "Algeria",
+    homeColors: "red and white jerseys, Swiss scarves",
+    awayColors: "green white and red jerseys, Algerian scarves",
+    venue: "BC Place",
+    city: "Vancouver",
+    round: "round-of-32",
+  },
+  {
+    matchNumber: "86",
+    homeTeam: "Argentina",
+    awayTeam: "Cabo Verde",
+    homeColors: "white and sky blue striped jerseys, Argentine scarves",
+    awayColors: "blue white and red jerseys, Cape Verde scarves",
+    venue: "Hard Rock Stadium",
+    city: "Miami Gardens",
+    round: "round-of-32",
+  },
+  {
+    matchNumber: "87",
+    homeTeam: "Colombia",
+    awayTeam: "Ghana",
+    homeColors: "yellow blue and red jerseys, Colombian scarves",
+    awayColors: "yellow red and green jerseys with black star, Ghana scarves",
+    venue: "Arrowhead Stadium",
+    city: "Kansas City",
+    round: "round-of-32",
+  },
+  {
+    matchNumber: "88",
+    homeTeam: "Australia",
+    awayTeam: "Egypt",
+    homeColors: "yellow and green jerseys, Australian scarves",
+    awayColors: "red white and black jerseys, Egyptian scarves",
+    venue: "AT&T Stadium",
+    city: "Arlington",
+    round: "round-of-32",
+  },
+];
+
+const TEAM_BASE =
+  "Cinematic wide-angle sports photography for a ticket marketplace hero, FIFA World Cup 2026, packed stadium crowd viewed from behind supporters in lower stands, photorealistic, lush green pitch visible, golden hour lighting, no readable text, no watermarks, 16:10 aspect ratio";
+
+export function buildTeamMatchImagePrompt(spec: TeamMatchImageSpec): string {
+  const roundLabel = spec.round.replace(/-/g, " ");
+  return `${TEAM_BASE}. ${roundLabel} at ${spec.venue}, ${spec.city}. Crowd split down the middle: left side ${spec.homeTeam} supporters in ${spec.homeColors}, right side ${spec.awayTeam} supporters in ${spec.awayColors}, fans raising scarves, iconic stadium architecture in background.`;
+}
+
+export function getTeamMatchImageSpec(
+  matchNumber: string
+): TeamMatchImageSpec | undefined {
+  return TEAM_MATCH_SPECS.find((s) => s.matchNumber === matchNumber);
+}
+
 export function buildMatchImagePrompt(spec: MatchImageSpec): string {
   const roundLabel = spec.round.replace(/-/g, " ");
   return `${BASE}. ${roundLabel} host venue: ${spec.venue}, ${spec.city}. ${spec.scene}. ${NEUTRAL_RULES}.`;
@@ -287,5 +404,9 @@ export function getMatchImageSpec(matchNumber: string): MatchImageSpec | undefin
 }
 
 export function hasNeutralMatchImage(matchNumber: string | null | undefined): boolean {
-  return matchNumber != null && GENERATED_NEUTRAL_MATCH_IMAGES.has(matchNumber);
+  if (matchNumber == null) return false;
+  return (
+    TEAM_MATCH_IMAGES.has(matchNumber) ||
+    GENERATED_NEUTRAL_MATCH_IMAGES.has(matchNumber)
+  );
 }
