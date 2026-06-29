@@ -69,6 +69,9 @@ export function StadiumMap({
         return (
           <g key={sec.number}>
             <path
+              id={`section-${sec.number}`}
+              data-section={sec.number}
+              data-zone={sec.zone}
               d={sec.path}
               fill={
                 isActive

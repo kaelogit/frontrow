@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { EventWithRelations } from "@/types/database";
-import type { WorldCupStage } from "@/lib/marketing/world-cup-stages";
+import type { StagePricingTier, WorldCupStage } from "@/lib/marketing/world-cup-stages";
 import { estimateAvgPrice } from "@/lib/marketing/world-cup-stages";
+
+type StageSectionSample = NonNullable<WorldCupStage["sectionSamples"]>[number];
 import { MatchTeamsRow } from "@/components/events/MatchTeamsRow";
 import { getEventMatchDisplay } from "@/lib/events/match-display";
 import { getEventTicketHref } from "@/lib/events/event-scarcity";
@@ -13,7 +15,7 @@ import { useDisplayCurrency, useFxSettings } from "@/components/site-settings/Si
 import { formatDisplayPrice } from "@/lib/fx/format";
 
 interface StageMatchTableProps {
-  stage: WorldCupStage;
+  shortTitle: string;
   events: EventWithRelations[];
 }
 
@@ -82,12 +84,12 @@ function StageMatchCards({ events }: { events: EventWithRelations[] }) {
   );
 }
 
-export function StageMatchTable({ stage, events }: StageMatchTableProps) {
+export function StageMatchTable({ shortTitle, events }: StageMatchTableProps) {
   if (events.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center">
         <p className="text-slate-600">
-          {stage.shortTitle} matches will be listed as inventory is confirmed.
+          {shortTitle} matches will be listed as inventory is confirmed.
         </p>
         <Link
           href="/world-cup-2026"
@@ -164,7 +166,8 @@ export function StageMatchTable({ stage, events }: StageMatchTableProps) {
 }
 
 interface StagePricingTableProps {
-  stage: WorldCupStage;
+  pricingTiers?: StagePricingTier[];
+  sectionSamples?: StageSectionSample[];
 }
 
 function PricingTierCards({
@@ -227,8 +230,11 @@ function SectionSampleCards({
   );
 }
 
-export function StagePricingTable({ stage }: StagePricingTableProps) {
-  if (!stage.pricingTiers?.length) return null;
+export function StagePricingTable({
+  pricingTiers,
+  sectionSamples,
+}: StagePricingTableProps) {
+  if (!pricingTiers?.length) return null;
 
   return (
     <div className="mt-10">
@@ -237,7 +243,7 @@ export function StagePricingTable({ stage }: StagePricingTableProps) {
         Typical market range per ticket · updated from live inventory
       </p>
 
-      <PricingTierCards tiers={stage.pricingTiers} />
+      <PricingTierCards tiers={pricingTiers} />
 
       <div className="mt-4 hidden overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm md:block">
         <table className="w-full min-w-[480px] text-left text-sm">
@@ -250,7 +256,7 @@ export function StagePricingTable({ stage }: StagePricingTableProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {stage.pricingTiers.map((tier) => (
+            {pricingTiers.map((tier) => (
               <tr key={tier.zone}>
                 <td className="px-4 py-3 font-medium text-slate-900">{tier.zone}</td>
                 <td className="px-4 py-3 text-slate-600">{tier.sections}</td>
@@ -266,14 +272,14 @@ export function StagePricingTable({ stage }: StagePricingTableProps) {
         </table>
       </div>
 
-      {stage.sectionSamples && stage.sectionSamples.length > 0 && (
+      {sectionSamples && sectionSamples.length > 0 && (
         <>
           <h3 className="mt-10 text-lg font-bold text-slate-900">Section price breakdown</h3>
           <p className="mt-1 text-sm text-slate-600">
             Sample listings — prices vary by row and quantity
           </p>
 
-          <SectionSampleCards rows={stage.sectionSamples} />
+          <SectionSampleCards rows={sectionSamples} />
 
           <div className="mt-4 hidden overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm md:block">
             <table className="w-full min-w-[400px] text-left text-sm">
@@ -286,7 +292,7 @@ export function StagePricingTable({ stage }: StagePricingTableProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {stage.sectionSamples.map((row) => (
+                {sectionSamples.map((row) => (
                   <tr key={`${row.section}-${row.fromPrice}`}>
                     <td className="px-4 py-3 font-medium text-slate-900">{row.section}</td>
                     <td className="px-4 py-3 text-right font-semibold">

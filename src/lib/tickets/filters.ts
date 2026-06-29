@@ -18,6 +18,14 @@ export function discountPercent(listing: TicketListing): number {
   return Math.round(((was - listing.price) / was) * 100);
 }
 
+/** Quality signals for default browse — price is not penalized (use Sort: Price for that). */
+function recommendedRank(listing: TicketListing): number {
+  const view = (listing.view_score ?? 5) * 15;
+  const deal = discountPercent(listing);
+  const perks = listing.perks.length * 2;
+  return view + deal + perks;
+}
+
 export function filterListings(
   listings: TicketListing[],
   opts: {
@@ -77,7 +85,9 @@ export function sortListings(
       return copy.sort((a, b) => a.price - b.price);
     case "best_view":
       return copy.sort(
-        (a, b) => (b.view_score ?? 0) - (a.view_score ?? 0) || a.price - b.price
+        (a, b) =>
+          (b.view_score ?? 0) - (a.view_score ?? 0) ||
+          b.price - a.price
       );
     case "best_deal":
       return copy.sort(
@@ -85,11 +95,9 @@ export function sortListings(
           discountPercent(b) - discountPercent(a) || a.price - b.price
       );
     default:
-      return copy.sort((a, b) => {
-        const scoreA = (a.view_score ?? 5) * 15 - a.price / 80 + discountPercent(a);
-        const scoreB = (b.view_score ?? 5) * 15 - b.price / 80 + discountPercent(b);
-        return scoreB - scoreA;
-      });
+      return copy.sort(
+        (a, b) => recommendedRank(b) - recommendedRank(a) || b.price - a.price
+      );
   }
 }
 

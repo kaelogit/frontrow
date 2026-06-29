@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "icons:generate": "node scripts/generate-brand-icons.mjs",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "seed:wc2026": "node scripts/generate-world-cup-2026-seed.mjs",
@@ -43,7 +44,10 @@
     "seed:match-94": "node scripts/import-viagogo-match.mjs match-94 scripts/data/pastes/match-94.txt",
     "seed:match-95": "node scripts/import-viagogo-match.mjs match-95 scripts/data/pastes/match-95.txt",
     "seed:match-96": "node scripts/import-viagogo-match.mjs match-96 scripts/data/pastes/match-96.txt",
-    "stadium:levis-svg": "node scripts/generate-levis-svg.mjs"
+    "stadium:levis-svg": "node scripts/generate-levis-svg.mjs",
+    "stadium:bc-place-svg": "node scripts/generate-bc-place-svg.mjs",
+    "stadium:metlife-svg": "node scripts/generate-metlife-svg.mjs",
+    "stadium:sofi-svg": "node scripts/generate-sofi-svg.mjs"
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^2.2.11",
@@ -72,6 +76,8 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.35.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

@@ -13,19 +13,34 @@ const sizes = {
   lg: { icon: "h-6 w-6", box: "h-12 w-12 rounded-xl", text: "text-2xl" },
 };
 
+export function LogoMarkBox({
+  className,
+  size = "md",
+}: {
+  className?: string;
+  size?: LogoProps["size"];
+}) {
+  const s = sizes[size ?? "md"];
+
+  return (
+    <div
+      className={cn(
+        s.box,
+        "flex items-center justify-center bg-gradient-to-br from-sky-500 to-indigo-600 shadow-md shadow-sky-500/25 transition group-hover:shadow-lg group-hover:shadow-sky-500/30",
+        className
+      )}
+    >
+      <Ticket className={cn(s.icon, "text-white")} strokeWidth={2.25} />
+    </div>
+  );
+}
+
 export function Logo({ className, size = "md" }: LogoProps) {
   const s = sizes[size];
 
   return (
     <Link href="/" className={cn("group flex items-center gap-2.5", className)}>
-      <div
-        className={cn(
-          s.box,
-          "flex items-center justify-center bg-gradient-to-br from-sky-500 to-indigo-600 shadow-md shadow-sky-500/25 transition group-hover:shadow-lg group-hover:shadow-sky-500/30"
-        )}
-      >
-        <Ticket className={cn(s.icon, "text-white")} strokeWidth={2.25} />
-      </div>
+      <LogoMarkBox size={size} />
       <span className={cn(s.text, "font-bold tracking-tight")}>
         <span className="text-slate-800">Front</span>
         <span className="bg-gradient-to-r from-sky-600 to-indigo-600 bg-clip-text text-transparent">

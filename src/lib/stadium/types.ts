@@ -19,6 +19,8 @@ export interface StadiumMapDefinition {
   slug: string;
   name: string;
   layout: StadiumMapLayout;
+  /** Static SVG export (admin upload / reference) */
+  svgPath?: string;
   viewBox: string;
   pitch: PitchRect;
   geometry: SectionGeometry[];

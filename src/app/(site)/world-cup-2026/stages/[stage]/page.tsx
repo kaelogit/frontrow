@@ -113,9 +113,12 @@ export default async function WorldCupStagePage({ params }: StagePageProps) {
             for tickets
           </p>
           <div className="mt-8">
-            <StageMatchTable stage={stage} events={stageEvents} />
+            <StageMatchTable shortTitle={stage.shortTitle} events={stageEvents} />
           </div>
-          <StagePricingTable stage={stage} />
+          <StagePricingTable
+            pricingTiers={stage.pricingTiers}
+            sectionSamples={stage.sectionSamples}
+          />
         </div>
       </section>
     </>

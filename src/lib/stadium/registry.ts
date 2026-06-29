@@ -24,7 +24,8 @@ const DEFINITIONS: Record<string, StadiumMapDefinition> = {
   "bc-place": {
     slug: "bc-place",
     name: "BC Place",
-    layout: "programmatic",
+    layout: "svg",
+    svgPath: "/stadiums/bc-place.svg",
     viewBox: BC_PLACE_VIEWBOX,
     pitch: BC_PLACE_PITCH,
     geometry: BC_PLACE_GEOMETRY,
@@ -32,7 +33,8 @@ const DEFINITIONS: Record<string, StadiumMapDefinition> = {
   metlife: {
     slug: "metlife",
     name: "MetLife Stadium",
-    layout: "programmatic",
+    layout: "svg",
+    svgPath: "/stadiums/metlife.svg",
     viewBox: METLIFE_VIEWBOX,
     pitch: METLIFE_PITCH,
     geometry: METLIFE_GEOMETRY,
@@ -40,7 +42,8 @@ const DEFINITIONS: Record<string, StadiumMapDefinition> = {
   sofi: {
     slug: "sofi",
     name: "SoFi Stadium",
-    layout: "programmatic",
+    layout: "svg",
+    svgPath: "/stadiums/sofi.svg",
     viewBox: SOFI_VIEWBOX,
     pitch: SOFI_PITCH,
     geometry: SOFI_GEOMETRY,

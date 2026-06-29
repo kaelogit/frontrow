@@ -1,4 +1,4 @@
-import { BC_PLACE_SECTIONS } from "./bc-place-sections";
+import { BC_PLACE_SECTIONS, BC_PLACE_SECTION_MAP } from "./bc-place-sections";
 
 export interface SectionGeometry {
   number: string;
@@ -8,97 +8,140 @@ export interface SectionGeometry {
   zone: string;
 }
 
-const CX = 400;
-const CY = 320;
+export const BC_PLACE_VIEWBOX = "0 0 800 640";
 
-function wedgePath(
+/** Soccer pitch inside the 200 ring — aligned to bc-place-reference.png */
+export const BC_PLACE_PITCH = {
+  x: 262,
+  y: 192,
+  width: 276,
+  height: 226,
+};
+
+const CX = 400;
+const CY = 302;
+/** Pill-shaped bowl (horizontal stretch matches FIFA chart) */
+const SX = 1.36;
+const SY = 0.68;
+
+function ePoint(cx: number, cy: number, r: number, angle: number) {
+  return {
+    x: cx + r * Math.cos(angle) * SX,
+    y: cy + r * Math.sin(angle) * SY,
+  };
+}
+
+function stadiumWedge(
   cx: number,
   cy: number,
   innerR: number,
   outerR: number,
-  start: number,
-  end: number
+  a0: number,
+  a1: number
 ): string {
-  const x1 = cx + innerR * Math.cos(start);
-  const y1 = cy + innerR * Math.sin(start);
-  const x2 = cx + outerR * Math.cos(start);
-  const y2 = cy + outerR * Math.sin(start);
-  const x3 = cx + outerR * Math.cos(end);
-  const y3 = cy + outerR * Math.sin(end);
-  const x4 = cx + innerR * Math.cos(end);
-  const y4 = cy + innerR * Math.sin(end);
-  const large = end - start > Math.PI ? 1 : 0;
+  const p0 = ePoint(cx, cy, innerR, a0);
+  const p1 = ePoint(cx, cy, outerR, a0);
+  const p2 = ePoint(cx, cy, outerR, a1);
+  const p3 = ePoint(cx, cy, innerR, a1);
+  const large = a1 - a0 > Math.PI ? 1 : 0;
   return [
-    `M ${x1} ${y1}`,
-    `L ${x2} ${y2}`,
-    `A ${outerR} ${outerR} 0 ${large} 1 ${x3} ${y3}`,
-    `L ${x4} ${y4}`,
-    `A ${innerR} ${innerR} 0 ${large} 0 ${x1} ${y1}`,
+    `M ${p0.x.toFixed(2)} ${p0.y.toFixed(2)}`,
+    `L ${p1.x.toFixed(2)} ${p1.y.toFixed(2)}`,
+    `A ${(outerR * SX).toFixed(2)} ${(outerR * SY).toFixed(2)} 0 ${large} 1 ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`,
+    `L ${p3.x.toFixed(2)} ${p3.y.toFixed(2)}`,
+    `A ${(innerR * SX).toFixed(2)} ${(innerR * SY).toFixed(2)} 0 ${large} 0 ${p0.x.toFixed(2)} ${p0.y.toFixed(2)}`,
     "Z",
   ].join(" ");
 }
 
-function ringSections(
+function ringArc(
   sections: string[],
   innerR: number,
   outerR: number,
-  startAngle: number,
-  sweep: number
+  start: number,
+  end: number
 ): SectionGeometry[] {
+  const sweep = end - start;
   const step = sweep / sections.length;
   return sections.map((number, i) => {
-    const a0 = startAngle + i * step;
-    const a1 = a0 + step * 0.92;
-    const meta = BC_PLACE_SECTIONS.find((s) => s.number === number);
+    const a0 = start + i * step;
+    const a1 = a0 + step * 0.9;
     const mid = (a0 + a1) / 2;
     const labelR = (innerR + outerR) / 2;
+    const label = ePoint(CX, CY, labelR, mid);
     return {
       number,
-      path: wedgePath(CX, CY, innerR, outerR, a0, a1),
-      labelX: CX + labelR * Math.cos(mid),
-      labelY: CY + labelR * Math.sin(mid),
-      zone: meta?.zone ?? "cat-3",
+      path: stadiumWedge(CX, CY, innerR, outerR, a0, a1),
+      labelX: label.x,
+      labelY: label.y,
+      zone: BC_PLACE_SECTION_MAP.get(number)?.zone ?? "cat-3",
     };
   });
 }
 
-const order200 = [
-  "248", "249", "251", "252", "253", "254", "201", "202", "203", "204", "206", "207",
-  "209", "210", "211", "212", "213", "214", "215", "216", "217", "218", "219", "221",
-  "222", "224", "225", "226", "227", "228", "229", "230", "231", "233", "234", "236",
-  "237", "238", "239", "240", "241", "242", "243", "244", "245", "246",
+/** Clockwise from east curve — matches docs/venues/BC_PLACE.md */
+const order200East = [
+  "248", "249", "251", "252", "253", "254",
+  "201", "202", "203", "204", "206", "207",
+];
+const order200South = [
+  "209", "210", "211", "212", "213", "214", "215", "216", "217", "218", "219",
+];
+const order200West = [
+  "221", "222", "224", "225", "226", "227", "228", "229", "230", "231", "233", "234",
+];
+const order200North = [
+  "236", "237", "238", "239", "240", "241", "242", "243", "244", "245", "246",
 ];
 
-const order400 = [
-  "450", "451", "452", "453", "454", "401", "402", "403", "404", "405", "406", "407",
-  "408", "409", "410", "411", "412", "413", "414", "415", "416", "417", "418", "419",
-  "420", "421", "422", "423", "424", "425", "426", "427", "428", "429", "430", "431",
-  "432", "433", "434", "435", "436", "437", "438", "439", "440", "441", "442", "443",
-  "444", "445", "446", "447", "448", "449",
-];
-
-const order300 = [
+const order300North = [
   "346", "345", "344", "343", "342", "341", "340", "339", "338", "337", "336",
 ];
 
-/** Generated wedge geometry for interactive SVG (800×640 viewBox) */
-export const BC_PLACE_GEOMETRY: SectionGeometry[] = [
-  ...ringSections(order200, 95, 155, -Math.PI / 2, Math.PI * 2),
-  ...ringSections(
-    order300,
-    158,
-    188,
-    -Math.PI / 2 - 0.55,
-    Math.PI * 0.35
-  ),
-  ...ringSections(order400, 192, 248, -Math.PI / 2, Math.PI * 2),
+const order400East = [
+  "450", "451", "452", "453", "454",
+  "401", "402", "403", "404", "405", "406", "407",
+];
+const order400South = [
+  "408", "409", "410", "411", "412", "413", "414", "415", "416", "417", "418", "419",
+];
+const order400West = [
+  "420", "421", "422", "423", "424", "425", "426", "427", "428", "429", "430", "431", "432",
+];
+const order400North = [
+  "433", "434", "435", "436", "437", "438", "439", "440", "441", "442", "443", "444",
+  "445", "446", "447", "448", "449",
 ];
 
-export const BC_PLACE_VIEWBOX = "0 0 800 640";
+const tracedArcs: SectionGeometry[] = [
+  ...ringArc(order400East, 196, 256, -0.38 * Math.PI, 0.24 * Math.PI),
+  ...ringArc(order400South, 196, 256, 0.24 * Math.PI, 0.62 * Math.PI),
+  ...ringArc(order400West, 196, 256, 0.62 * Math.PI, 0.98 * Math.PI),
+  ...ringArc(order400North, 196, 256, -0.98 * Math.PI, -0.38 * Math.PI),
+  ...ringArc(order300North, 162, 190, -0.74 * Math.PI, -0.26 * Math.PI),
+  ...ringArc(order200East, 100, 156, -0.36 * Math.PI, 0.22 * Math.PI),
+  ...ringArc(order200South, 100, 156, 0.22 * Math.PI, 0.6 * Math.PI),
+  ...ringArc(order200West, 100, 156, 0.6 * Math.PI, 0.96 * Math.PI),
+  ...ringArc(order200North, 100, 156, -0.96 * Math.PI, -0.36 * Math.PI),
+];
 
-export const BC_PLACE_PITCH = {
-  x: 280,
-  y: 200,
-  width: 240,
-  height: 240,
-};
+const geometryByNumber = new Map(tracedArcs.map((g) => [g.number, g]));
+
+for (const sec of BC_PLACE_SECTIONS) {
+  if (!geometryByNumber.has(sec.number)) {
+    const idx = BC_PLACE_SECTIONS.indexOf(sec);
+    const angle = -Math.PI / 2 + (idx / BC_PLACE_SECTIONS.length) * Math.PI * 2;
+    geometryByNumber.set(sec.number, {
+      number: sec.number,
+      path: stadiumWedge(CX, CY, 100, 156, angle, angle + 0.06),
+      labelX: ePoint(CX, CY, 128, angle + 0.03).x,
+      labelY: ePoint(CX, CY, 128, angle + 0.03).y,
+      zone: sec.zone,
+    });
+  }
+}
+
+/** Viagogo-style pill bowl — arcs traced from bc-place-reference.png */
+export const BC_PLACE_GEOMETRY: SectionGeometry[] = BC_PLACE_SECTIONS.map(
+  (sec) => geometryByNumber.get(sec.number)!
+);

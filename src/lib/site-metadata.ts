@@ -56,6 +56,15 @@ export const rootMetadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon", type: "image/png", sizes: "32x32" },
+    ],
+    apple: [{ url: "/apple-icon", type: "image/png", sizes: "180x180" }],
+    shortcut: "/favicon.ico",
+  },
+  manifest: "/manifest.webmanifest",
   ...buildSocialMetadata({
     title: `${SITE_NAME} — Premium Event Tickets`,
     description: SITE_DESCRIPTION,
