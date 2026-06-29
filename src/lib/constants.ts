@@ -8,8 +8,11 @@ export const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AED", "BRL"] as const;
 export const RESERVATION_HOLD_HOURS = 48;
 
 const cryptoPaymentsLive = Boolean(
-  process.env.NEXT_PUBLIC_CRYPTO_RECEIVE_ADDRESS &&
-    process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
+  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID &&
+    (process.env.NEXT_PUBLIC_CRYPTO_RECEIVE_ADDRESS_EVM ||
+      process.env.NEXT_PUBLIC_CRYPTO_RECEIVE_ADDRESS ||
+      process.env.NEXT_PUBLIC_CRYPTO_RECEIVE_ADDRESS_SOL ||
+      process.env.NEXT_PUBLIC_CRYPTO_RECEIVE_ADDRESS_BTC)
 );
 
 export const PAYMENT_METHODS = {
@@ -29,7 +32,7 @@ export const PAYMENT_METHODS = {
   crypto: {
     id: "crypto" as const,
     label: "Pay with crypto",
-    description: "USDC · Trust Wallet · MetaMask · WalletConnect",
+    description: "BTC · ETH · USDT · USDC · BNB · SOL",
     enabled: cryptoPaymentsLive,
     disabledLabel: "Coming soon",
   },

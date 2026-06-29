@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { ChevronRight, MapPin } from "lucide-react";
 import type { EventWithRelations } from "@/types/database";
