@@ -13,8 +13,10 @@ import { MatchTeamsRow } from "@/components/events/MatchTeamsRow";
 import { getEventMatchDisplay } from "@/lib/events/match-display";
 import { getEventTicketHref } from "@/lib/events/event-scarcity";
 import { formatEventDate, formatPrice } from "@/lib/utils";
-import { getEventImage } from "@/lib/images";
+import { resolveEventHeroImage } from "@/lib/images";
 import Image from "next/image";
+import { useDisplayCurrency, useFxSettings } from "@/components/site-settings/SiteSettingsProvider";
+import { formatDisplayPrice } from "@/lib/fx/format";
 
 interface CityMatchListProps {
   city: WorldCupCity;
@@ -25,6 +27,8 @@ type MonthFilter = "all" | "june" | "july";
 
 export function CityMatchList({ city, events }: CityMatchListProps) {
   const [month, setMonth] = useState<MonthFilter>("all");
+  const fx = useFxSettings();
+  const displayCurrency = useDisplayCurrency();
 
   const filtered = useMemo(() => {
     if (month === "all") return events;
@@ -82,9 +86,12 @@ export function CityMatchList({ city, events }: CityMatchListProps) {
           {filtered.map((event) => {
             const urgency = getEventUrgency(event);
             const match = getEventMatchDisplay(event);
-            const imageSrc =
-              event.image_url ??
-              getEventImage(event.slug, event.competition?.slug ?? null);
+            const { src: imageSrc } = resolveEventHeroImage(
+              event.slug,
+              event.competition?.slug ?? null,
+              event.match_number,
+              event.image_url
+            );
 
             return (
               <li key={event.id}>
@@ -130,7 +137,13 @@ export function CityMatchList({ city, events }: CityMatchListProps) {
                       <div>
                         <p className="text-xs text-slate-500">From</p>
                         <p className="text-lg font-bold text-slate-900">
-                          {formatPrice(event.min_price, event.currency)}
+                          {event.currency === "USD"
+                            ? formatDisplayPrice({
+                                usdAmount: event.min_price,
+                                displayCurrency,
+                                fx,
+                              })
+                            : formatPrice(event.min_price, event.currency)}
                         </p>
                       </div>
                     )}

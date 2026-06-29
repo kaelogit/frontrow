@@ -7,6 +7,8 @@ import { MatchTeamsRow } from "@/components/events/MatchTeamsRow";
 import { getEventMatchDisplay } from "@/lib/events/match-display";
 import { getEventTicketHref } from "@/lib/events/event-scarcity";
 import { formatEventDate, formatPrice } from "@/lib/utils";
+import { useDisplayCurrency, useFxSettings } from "@/components/site-settings/SiteSettingsProvider";
+import { formatDisplayPrice } from "@/lib/fx/format";
 
 interface StageMatchTableProps {
   stage: WorldCupStage;
@@ -14,6 +16,9 @@ interface StageMatchTableProps {
 }
 
 function StageMatchCards({ events }: { events: EventWithRelations[] }) {
+  const fx = useFxSettings();
+  const displayCurrency = useDisplayCurrency();
+
   return (
     <div className="space-y-3 md:hidden">
       {events.map((event) => {
@@ -42,12 +47,21 @@ function StageMatchCards({ events }: { events: EventWithRelations[] }) {
                 <p className="text-xs text-slate-500">From</p>
                 <p className="text-lg font-bold text-slate-900">
                   {event.min_price != null
-                    ? formatPrice(event.min_price, event.currency)
+                    ? event.currency === "USD"
+                      ? formatDisplayPrice({
+                          usdAmount: event.min_price,
+                          displayCurrency,
+                          fx,
+                        })
+                      : formatPrice(event.min_price, event.currency)
                     : "—"}
                 </p>
                 {avg != null && (
                   <p className="text-xs text-slate-500">
-                    Avg {formatPrice(avg, event.currency)}
+                    Avg{" "}
+                    {event.currency === "USD"
+                      ? formatDisplayPrice({ usdAmount: avg, displayCurrency, fx })
+                      : formatPrice(avg, event.currency)}
                   </p>
                 )}
               </div>

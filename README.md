@@ -17,6 +17,14 @@ Open [http://localhost:3000](http://localhost:3000)
 
 The app runs with **mock data** until Supabase is configured.
 
+### E2E tests
+
+```bash
+npm run test:e2e
+```
+
+Playwright runs the reservation flow against mock data (no Supabase required). CI: `.github/workflows/e2e.yml`.
+
 ## Supabase setup
 
 Full step-by-step runbook: **[docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md)**

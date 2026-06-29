@@ -38,7 +38,15 @@ export interface AdminOrder {
   items: AdminOrderItem[];
 }
 
-const demoOrders = new Map<string, AdminOrder>();
+const demoOrders = (() => {
+  const g = globalThis as typeof globalThis & {
+    __frontrowlyDemoOrders?: Map<string, AdminOrder>;
+  };
+  if (!g.__frontrowlyDemoOrders) {
+    g.__frontrowlyDemoOrders = new Map<string, AdminOrder>();
+  }
+  return g.__frontrowlyDemoOrders;
+})();
 
 export function saveDemoOrder(order: AdminOrder) {
   demoOrders.set(order.reference, order);

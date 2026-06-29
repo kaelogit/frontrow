@@ -93,7 +93,7 @@ export const LISTINGS = [
   ["317",null,"23",4,4,3192,3671,["2 - 4 tickets together","Clear view"],[],null,null,"seat"],
   ["210",null,null,2,2,3193,3672,["2 tickets together","Clear view"],[],7.7,"Great","seat"],
   ["252",null,null,2,2,3193,3672,["2 tickets together","Clear view"],[],null,null,"seat"],
-  ["203",null,null,4,4,3193,3672,["2 - 4 tickets together","Clear view"],[],203,null,"seat"],
+  ["203",null,null,4,4,3193,3672,["2 - 4 tickets together","Clear view"],[],null,null,"seat"],
   ["320",null,"14",4,4,3239,3725,["1 - 4 tickets together","Clear view"],[],null,null,"seat"],
   ["319",null,"23",2,2,3248,3735,["2 tickets together","Clear view"],[],7.4,"Great","seat"],
   ["102",null,"4",2,2,3269,3759,["2 tickets together","Clear view"],[],8.8,"Amazing","seat"],

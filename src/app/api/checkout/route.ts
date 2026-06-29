@@ -6,6 +6,7 @@ import { createWalletConnectPayment } from "@/lib/walletconnect-pay";
 import { sendReservationEmails } from "@/lib/email";
 import { hasSupabaseConfig, createAdminClient } from "@/lib/supabase/admin";
 import { saveDemoOrder, type AdminOrder } from "@/lib/orders/demo-store";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import {
   releaseExpiredInventory,
   reserveCheckoutItems,
@@ -44,6 +45,17 @@ export async function POST(request: Request) {
     }
 
     const data = parsed.data;
+
+    // Rate limit checkout spam (IP + email).
+    const gate = await enforceRateLimit({
+      request,
+      id: "checkout",
+      scope: "ip_email",
+      windowSeconds: 60,
+      limit: 8,
+      email: data.customerEmail,
+    });
+    if (!gate.ok) return gate.response;
 
     if (data.paymentMethod === "card") {
       return NextResponse.json(

@@ -161,7 +161,7 @@ CROSS JOIN (VALUES
 ('317', '23', NULL, 'seat', 4, 4, 2872.80::DECIMAL, 3192.00::DECIMAL, 'USD', ARRAY['2 - 4 tickets together', 'Clear view'], ARRAY[]::TEXT[], NULL, NULL, 84),
 ('210', NULL, NULL, 'seat', 2, 2, 2873.70::DECIMAL, 3193.00::DECIMAL, 'USD', ARRAY['2 tickets together', 'Clear view'], ARRAY[]::TEXT[], 7.7, 'Great', 85),
 ('252', NULL, NULL, 'seat', 2, 2, 2873.70::DECIMAL, 3193.00::DECIMAL, 'USD', ARRAY['2 tickets together', 'Clear view'], ARRAY[]::TEXT[], NULL, NULL, 86),
-('203', NULL, NULL, 'seat', 4, 4, 2873.70::DECIMAL, 3193.00::DECIMAL, 'USD', ARRAY['2 - 4 tickets together', 'Clear view'], ARRAY[]::TEXT[], 203, NULL, 87),
+('203', NULL, NULL, 'seat', 4, 4, 2873.70::DECIMAL, 3193.00::DECIMAL, 'USD', ARRAY['2 - 4 tickets together', 'Clear view'], ARRAY[]::TEXT[], NULL, NULL, 87),
 ('320', '14', NULL, 'seat', 4, 4, 2915.10::DECIMAL, 3239.00::DECIMAL, 'USD', ARRAY['1 - 4 tickets together', 'Clear view'], ARRAY[]::TEXT[], NULL, NULL, 88),
 ('319', '23', NULL, 'seat', 2, 2, 2923.20::DECIMAL, 3248.00::DECIMAL, 'USD', ARRAY['2 tickets together', 'Clear view'], ARRAY[]::TEXT[], 7.4, 'Great', 89),
 ('102', '4', NULL, 'seat', 2, 2, 2942.10::DECIMAL, 3269.00::DECIMAL, 'USD', ARRAY['2 tickets together', 'Clear view'], ARRAY[]::TEXT[], 8.8, 'Amazing', 90),

@@ -21,5 +21,17 @@ INSERT INTO site_settings (key, value) VALUES
     "viewersLabel": "World Cup events",
     "followersBase": 88600,
     "followersJitterPct": 2
+  }'::jsonb),
+  ('fx', '{
+    "enabled": false,
+    "base": "USD",
+    "rates": {
+      "EUR": 0.9,
+      "GBP": 0.78,
+      "CAD": 1.36,
+      "AED": 3.67,
+      "BRL": 5.2
+    },
+    "disclaimer": "Estimated conversion. Checkout in USD."
   }'::jsonb)
 ON CONFLICT (key) DO NOTHING;

@@ -13,7 +13,7 @@ import {
 import { getEventMatchDisplay } from "@/lib/events/match-display";
 import { saveCheckoutSession } from "@/lib/checkout/storage";
 import type { EventWithRelations, TicketListing } from "@/types/database";
-import { getEventImage } from "@/lib/images";
+import { resolveEventHeroImage } from "@/lib/images";
 import { formatEventDate, formatPrice } from "@/lib/utils";
 
 interface EventDetailClientProps {
@@ -54,9 +54,12 @@ export function EventDetailClient({ event, listings = [] }: EventDetailClientPro
     ? `${event.venue.name}, ${event.venue.city}`
     : "Venue TBA";
 
-  const imageSrc =
-    event.image_url ??
-    getEventImage(event.slug, event.competition?.slug ?? null);
+  const { src: imageSrc } = resolveEventHeroImage(
+    event.slug,
+    event.competition?.slug ?? null,
+    event.match_number,
+    event.image_url
+  );
 
   return (
     <>

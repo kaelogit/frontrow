@@ -12,6 +12,8 @@ import {
 } from "@/lib/events/event-scarcity";
 import { resolveEventHeroImage } from "@/lib/images";
 import { formatPrice } from "@/lib/utils";
+import { useDisplayCurrency, useFxSettings } from "@/components/site-settings/SiteSettingsProvider";
+import { formatDisplayPrice } from "@/lib/fx/format";
 import { cn } from "@/lib/utils";
 
 interface EventCardProps {
@@ -26,6 +28,8 @@ export function EventCard({ event, variant = "list" }: EventCardProps) {
   const matchLabel = formatMatchLabel(event.subtitle);
   const scarcityBadge = getEventScarcityBadge(event);
   const href = getEventTicketHref(event);
+  const fx = useFxSettings();
+  const displayCurrency = useDisplayCurrency();
 
   const location = event.venue
     ? `${event.venue.name}, ${event.venue.city}`
@@ -78,7 +82,14 @@ export function EventCard({ event, variant = "list" }: EventCardProps) {
           )}
           {event.min_price != null && (
             <div className="absolute bottom-2 right-2 rounded-md bg-slate-900/85 px-2 py-1 text-[11px] font-bold text-white backdrop-blur sm:bottom-3 sm:right-3 sm:rounded-lg sm:px-3 sm:py-1.5 sm:text-sm">
-              from {formatPrice(event.min_price, event.currency)}
+              from{" "}
+              {event.currency === "USD"
+                ? formatDisplayPrice({
+                    usdAmount: event.min_price,
+                    displayCurrency,
+                    fx,
+                  })
+                : formatPrice(event.min_price, event.currency)}
             </div>
           )}
         </div>
@@ -151,7 +162,14 @@ export function EventCard({ event, variant = "list" }: EventCardProps) {
           <MatchTeamsRow event={event} variant="compact" />
           {event.min_price != null && (
             <span className="shrink-0 text-sm font-bold text-slate-900">
-              from {formatPrice(event.min_price, event.currency)}
+              from{" "}
+              {event.currency === "USD"
+                ? formatDisplayPrice({
+                    usdAmount: event.min_price,
+                    displayCurrency,
+                    fx,
+                  })
+                : formatPrice(event.min_price, event.currency)}
             </span>
           )}
         </div>

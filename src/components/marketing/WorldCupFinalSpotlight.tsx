@@ -2,9 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Calendar, MapPin, Trophy } from "lucide-react";
 import type { EventWithRelations } from "@/types/database";
-import { getEventImage } from "@/lib/images";
+import { resolveEventHeroImage } from "@/lib/images";
 import { getEventTicketHref } from "@/lib/events/event-scarcity";
 import { formatEventDate, formatPrice } from "@/lib/utils";
+import { useDisplayCurrency, useFxSettings } from "@/components/site-settings/SiteSettingsProvider";
+import { formatDisplayPrice } from "@/lib/fx/format";
 
 const FINAL_SLUG = "world-cup-final-match-104";
 
@@ -17,8 +19,14 @@ interface WorldCupFinalSpotlightProps {
 }
 
 export function WorldCupFinalSpotlight({ event }: WorldCupFinalSpotlightProps) {
-  const imageSrc =
-    event.image_url ?? getEventImage(event.slug, event.competition?.slug ?? null);
+  const fx = useFxSettings();
+  const displayCurrency = useDisplayCurrency();
+  const { src: imageSrc } = resolveEventHeroImage(
+    event.slug,
+    event.competition?.slug ?? null,
+    event.match_number,
+    event.image_url
+  );
 
   const location = event.venue
     ? `${event.venue.name} · ${event.venue.city}, ${event.venue.country}`
@@ -76,7 +84,13 @@ export function WorldCupFinalSpotlight({ event }: WorldCupFinalSpotlightProps) {
                   Tickets from
                 </p>
                 <p className="text-2xl font-bold text-white sm:text-4xl lg:text-5xl">
-                  {formatPrice(event.min_price, event.currency)}
+                  {event.currency === "USD"
+                    ? formatDisplayPrice({
+                        usdAmount: event.min_price,
+                        displayCurrency,
+                        fx,
+                      })
+                    : formatPrice(event.min_price, event.currency)}
                 </p>
               </div>
             )}

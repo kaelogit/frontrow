@@ -2,9 +2,19 @@ import { NextResponse } from "next/server";
 import { getEventBySlug } from "@/lib/data/events";
 import { setQueueToken, getQueueToken, setQueueAdmission } from "@/lib/queue/cookies";
 import { joinQueue } from "@/lib/queue/store";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
+    const gate = await enforceRateLimit({
+      request,
+      id: "queue_join",
+      scope: "ip",
+      windowSeconds: 60,
+      limit: 30,
+    });
+    if (!gate.ok) return gate.response;
+
     const body = (await request.json()) as { slug?: string };
     const slug = body.slug?.trim();
     if (!slug) {
