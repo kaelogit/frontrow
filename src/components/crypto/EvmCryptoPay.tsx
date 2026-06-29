@@ -12,8 +12,10 @@ import {
 } from "wagmi";
 import { erc20Abi } from "viem";
 import { getEvmReceiveAddress } from "@/lib/crypto/config";
+import { buildEthPaymentUri } from "@/lib/crypto/payment-uri";
 import type { CryptoPaymentOption } from "@/lib/crypto/payment-options";
 import type { CryptoQuote } from "@/lib/crypto/prices";
+import { CryptoReceiveAddressCard } from "@/components/crypto/CryptoReceiveAddressCard";
 
 interface EvmCryptoPayProps {
   reference: string;
@@ -180,6 +182,29 @@ export function EvmCryptoPay({ reference, option, totalUsd, onPaid }: EvmCryptoP
       {error && (
         <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
       )}
+
+      <div className="border-t border-slate-200 pt-4">
+        <p className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+          Or scan &amp; send manually
+        </p>
+        <CryptoReceiveAddressCard
+          address={receiveAddress}
+          qrValue={
+            option.evmKind === "native" && quote
+              ? buildEthPaymentUri(receiveAddress, quote.amountRaw)
+              : receiveAddress
+          }
+          title={`${option.symbol} on ${option.chainName}`}
+          amountLabel={
+            quote ? `${quote.amount} ${option.symbol}` : undefined
+          }
+          hint={
+            option.evmKind === "erc20"
+              ? `Scan or copy, then send ${option.symbol} on ${option.chainName} only.`
+              : "Scan in Trust Wallet — QR prefills amount for ETH when supported."
+          }
+        />
+      </div>
     </div>
   );
 }

@@ -10,7 +10,9 @@ import {
   clusterApiUrl,
 } from "@solana/web3.js";
 import { getSolanaReceiveAddress } from "@/lib/crypto/config";
+import { buildSolanaPaymentUri } from "@/lib/crypto/payment-uri";
 import type { CryptoQuote } from "@/lib/crypto/prices";
+import { CryptoReceiveAddressCard } from "@/components/crypto/CryptoReceiveAddressCard";
 
 interface SolanaPayInnerProps {
   reference: string;
@@ -164,6 +166,23 @@ export function SolanaCryptoPay({ reference, totalUsd, onPaid }: SolanaPayInnerP
       {error && (
         <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
       )}
+
+      <div className="border-t border-slate-200 pt-4">
+        <p className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+          Or scan &amp; send manually
+        </p>
+        <CryptoReceiveAddressCard
+          address={receiveAddress}
+          qrValue={
+            quote?.amount != null
+              ? buildSolanaPaymentUri(receiveAddress, quote.amount)
+              : receiveAddress
+          }
+          title="Solana receive address"
+          amountLabel={quote ? `${quote.amount} SOL` : undefined}
+          hint="Scan with Trust Wallet or Phantom. QR includes the SOL amount when supported."
+        />
+      </div>
     </div>
   );
 }
