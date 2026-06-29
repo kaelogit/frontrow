@@ -192,6 +192,6 @@ export interface CheckoutPayload {
   items: CheckoutItem[];
   customerName: string;
   customerEmail: string;
-  customerPhone?: string;
+  customerPhone: string;
   paymentMethod: PaymentMethod;
 }

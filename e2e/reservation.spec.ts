@@ -15,33 +15,32 @@ test.describe("Reservation checkout", () => {
     const ticketDialog = page.getByRole("dialog", { name: "Ticket search" });
     await expect(ticketDialog).toBeVisible();
 
-    const listingCard = ticketDialog
+    const firstListing = ticketDialog
       .locator("div.flex.w-full.gap-3.rounded-xl")
-      .filter({ has: page.getByText("Section 342", { exact: true }) });
+      .first();
+    await expect(firstListing.getByText(/Section \d+/)).toBeVisible();
 
-    await Promise.all([
-      page.waitForURL(new RegExp(`/events/${TEST_EVENT_SLUG}/tickets/review\\?listing=`)),
-      listingCard.getByRole("button", { name: "View ticket" }).click(),
-    ]);
+    const sectionLabel = (await firstListing.getByText(/Section \d+/).first().textContent())!;
 
-    await Promise.all([
-      page.waitForURL(new RegExp(`/events/${TEST_EVENT_SLUG}/checkout`)),
-      page.getByRole("button", { name: "Continue" }).first().click(),
-    ]);
+    await firstListing.getByRole("button", { name: "View ticket" }).click();
+    await page.waitForURL(new RegExp(`/events/${TEST_EVENT_SLUG}/tickets/review\\?listing=`));
+
+    await expect(page.getByRole("heading", { name: sectionLabel })).toBeVisible();
+    await page.getByRole("button", { name: "Continue" }).click();
+    await page.waitForURL(new RegExp(`/events/${TEST_EVENT_SLUG}/checkout`));
 
     await expect(page.getByRole("heading", { name: "Enter email" })).toBeVisible();
 
     const customerEmail = `e2e-${Date.now()}@example.com`;
-    await page.locator('#checkout-email-form input[type="email"]').fill(customerEmail);
+    await page.getByPlaceholder("you@email.com").fill(customerEmail);
     await page.locator("#checkout-email-form").evaluate((form: HTMLFormElement) => {
       form.requestSubmit();
     });
 
     await expect(page.getByRole("heading", { name: "Your details" })).toBeVisible();
     await page.getByPlaceholder("John Smith").fill("E2E Tester");
-    await page.locator("#checkout-details-form").evaluate((form: HTMLFormElement) => {
-      form.requestSubmit();
-    });
+    await page.getByPlaceholder("+44 7700 900123").fill("+15555550100");
+    await page.getByRole("button", { name: "Continue" }).click();
 
     await expect(page.getByRole("heading", { name: "Payment method" })).toBeVisible();
     await expect(page.getByText("Request reservation")).toBeVisible();
@@ -53,15 +52,16 @@ test.describe("Reservation checkout", () => {
         Boolean(response.request().postData())
     );
 
-    await page.locator("#checkout-payment-form").evaluate((form: HTMLFormElement) => {
-      form.requestSubmit();
-    });
+    await Promise.all([
+      page.waitForURL(/\/order\/[A-Z0-9-]+\/confirmation/, { waitUntil: "commit" }),
+      page.getByRole("button", { name: "Submit reservation" }).click(),
+    ]);
 
     const response = await checkoutResponse;
     expect(response.ok(), await response.text()).toBeTruthy();
 
     const payload = (await response.json()) as { reference: string };
-    await page.waitForURL(new RegExp(`/order/${payload.reference}/confirmation`));
+    await expect(page).toHaveURL(new RegExp(`/order/${payload.reference}/confirmation`));
 
     await expect(page.getByRole("heading", { name: "Reservation received" })).toBeVisible();
     await expect(page.getByText(customerEmail)).toBeVisible();

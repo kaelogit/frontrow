@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { getReferenceMapImage } from "@/lib/stadium/registry";
 
@@ -48,6 +48,7 @@ interface ReferenceStadiumMapProps {
   imageSrc: string;
   venueName: string;
   zoom: number;
+  onImageError?: () => void;
 }
 
 /** Image-based bowl map for venues not yet traced to SVG geometry (e.g. Mercedes-Benz). */
@@ -55,7 +56,18 @@ export function ReferenceStadiumMap({
   imageSrc,
   venueName,
   zoom,
+  onImageError,
 }: ReferenceStadiumMapProps) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return (
+      <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">
+        Seating chart unavailable — use the zone map or listing filters.
+      </div>
+    );
+  }
+
   return (
     <StadiumMapCanvas zoom={zoom} className="bg-slate-50">
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -64,6 +76,10 @@ export function ReferenceStadiumMap({
         alt={`${venueName} seating chart`}
         className="mx-auto h-full w-full object-contain"
         draggable={false}
+        onError={() => {
+          setFailed(true);
+          onImageError?.();
+        }}
       />
     </StadiumMapCanvas>
   );

@@ -26,9 +26,13 @@ const checkoutSchema = z.object({
       unitPrice: z.number().positive(),
     })
   ).min(1),
-  customerName: z.string().min(2),
+  customerName: z.string().min(2, "Full name is required"),
   customerEmail: z.string().email(),
-  customerPhone: z.string().optional(),
+  customerPhone: z
+    .string()
+    .min(8, "Phone number is required")
+    .max(24)
+    .regex(/^\+?[\d\s().-]{7,}$/, "Enter a valid phone number with country code"),
   paymentMethod: z.enum(["card", "crypto", "reservation"]),
 });
 
@@ -94,7 +98,7 @@ export async function POST(request: Request) {
       event_id: data.eventId,
       customer_name: data.customerName,
       customer_email: data.customerEmail,
-      customer_phone: data.customerPhone ?? null,
+      customer_phone: data.customerPhone,
       total_amount: total,
       currency: "USD",
       payment_method: data.paymentMethod,
@@ -156,7 +160,7 @@ export async function POST(request: Request) {
         event_slug: data.eventSlug,
         customer_name: data.customerName,
         customer_email: data.customerEmail,
-        customer_phone: data.customerPhone ?? null,
+        customer_phone: data.customerPhone,
         total_amount: total,
         currency: "USD",
         payment_method: data.paymentMethod,

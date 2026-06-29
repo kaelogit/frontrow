@@ -12,6 +12,7 @@ import { PriceLockBanner } from "@/components/tickets/PriceLockBanner";
 import { OrderSummaryCard } from "@/components/tickets/OrderSummaryCard";
 import { MobileCheckoutBar } from "@/components/tickets/MobileCheckoutBar";
 import { CryptoCheckoutPanel } from "@/components/crypto/CryptoCheckoutPanel";
+import { Web3Provider } from "@/components/crypto/Web3Provider";
 import { getEventTicketHref } from "@/lib/events/event-scarcity";
 import {
   clearCheckoutSession,
@@ -72,6 +73,11 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
   const handleDetailsContinue = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    const trimmedPhone = phone.trim();
+    if (!name.trim() || trimmedPhone.length < 8) {
+      setError("Enter your full name and phone number with country code.");
+      return;
+    }
     setStep("payment");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -91,7 +97,7 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
           items: checkout.items,
           customerName: name,
           customerEmail: email,
-          customerPhone: phone || undefined,
+          customerPhone: phone.trim(),
           paymentMethod,
         }),
       });
@@ -142,6 +148,7 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
         : "checkout-payment-form";
 
   return (
+    <Web3Provider>
     <div className="flex min-h-screen flex-col bg-slate-100">
       <TicketFlowHeader event={event} showBackToTickets compact />
 
@@ -158,9 +165,7 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
               className="rounded-xl border border-slate-200 bg-white p-6 sm:p-8"
             >
               <h2 className="text-2xl font-bold text-slate-900">Enter email</h2>
-              <p className="mt-2 text-sm text-slate-600">
-                Not sure if you have an account? Enter your email and we&apos;ll check for you.
-              </p>
+              
 
               <div className="mt-6">
                 <label className="block text-sm font-medium text-slate-700">Email</label>
@@ -216,21 +221,33 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700">
-                    Phone <span className="font-normal text-slate-400">(optional)</span>
+                    Mobile phone <span className="font-normal text-slate-500">(with country code)</span>
                   </label>
                   <input
+                    required
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
-                    placeholder="+1 555 000 0000"
+                    placeholder="+44 7700 900123"
                     autoComplete="tel"
+                    inputMode="tel"
                   />
+                  <p className="mt-1.5 text-xs text-slate-500">
+                    Include your country code so we can reach you about payment and ticket delivery.
+                  </p>
                 </div>
               </div>
 
+              {error && (
+                <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {error}
+                </p>
+              )}
+
               <button
                 type="submit"
+                disabled={!name.trim() || phone.trim().length < 8}
                 className="mt-8 hidden w-full rounded-lg bg-slate-900 py-3.5 font-semibold text-white hover:bg-slate-800 lg:block"
               >
                 Continue
@@ -343,11 +360,20 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
         currency={checkout.currency}
         primaryLabel={mobileBarLabel}
         formId={cryptoOrder ? undefined : mobileFormId}
-        primaryDisabled={cryptoOrder ? true : step === "email" && !email.trim()}
+        primaryDisabled={
+          cryptoOrder
+            ? true
+            : step === "email"
+              ? !email.trim()
+              : step === "details"
+                ? !name.trim() || phone.trim().length < 8
+                : false
+        }
         loading={loading}
       />
 
       <TicketFlowFooter />
     </div>
+    </Web3Provider>
   );
 }

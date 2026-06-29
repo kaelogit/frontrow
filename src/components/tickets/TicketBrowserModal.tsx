@@ -65,14 +65,19 @@ export function TicketBrowserModal({
   const [perks, setPerks] = useState<string[]>([]);
   const [categoryZone, setCategoryZone] = useState<SectionZone | null>(null);
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
+  const [referenceMapFailed, setReferenceMapFailed] = useState(false);
 
   const mapSlug = event.venue?.stadium_map_slug ?? "bc-place";
   const venueSlug = event.venue?.slug ?? null;
-  const mapDisplayMode = getMapDisplayMode(
+  const baseMapDisplayMode = getMapDisplayMode(
     event.venue?.stadium_map_slug,
     event.seat_map_enabled,
     venueSlug
   );
+  const mapDisplayMode =
+    referenceMapFailed && baseMapDisplayMode === "reference"
+      ? "zone"
+      : baseMapDisplayMode;
   const showMapPanel = mapDisplayMode !== "none";
   const showZoomControls = mapDisplayMode === "section" || mapDisplayMode === "reference";
   const referenceMapImage =
@@ -82,6 +87,7 @@ export function TicketBrowserModal({
     if (!open) return;
     setShowQtyModal(true);
     setHeaderCollapsed(false);
+    setReferenceMapFailed(false);
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = "";
@@ -391,6 +397,7 @@ export function TicketBrowserModal({
                   imageSrc={referenceMapImage}
                   venueName={event.venue?.name ?? "Stadium"}
                   zoom={zoom}
+                  onImageError={() => setReferenceMapFailed(true)}
                 />
               ) : (
                 <ZoneOverviewMap

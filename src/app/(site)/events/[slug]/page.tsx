@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getEventBySlug } from "@/lib/data/events";
 import { getListingsForEvent } from "@/lib/data/listings";
+import { resolveEventHeroImage } from "@/lib/images";
+import { buildSocialMetadata } from "@/lib/site-metadata";
 import { enforceQueueOrRedirect } from "@/lib/queue/guard";
 import { EventDetailClient } from "./EventDetailClient";
 
@@ -14,9 +16,24 @@ export async function generateMetadata({ params }: EventPageProps) {
   const { slug } = await params;
   const event = await getEventBySlug(slug);
   if (!event) return { title: "Event not found" };
+
+  const description = event.subtitle ?? `Get tickets for ${event.title}`;
+  const { src: imagePath } = resolveEventHeroImage(
+    event.slug,
+    event.competition?.slug ?? null,
+    event.match_number,
+    event.image_url
+  );
+
   return {
     title: event.title,
-    description: event.subtitle ?? `Get tickets for ${event.title}`,
+    description,
+    ...buildSocialMetadata({
+      title: event.title,
+      description,
+      path: `/events/${slug}`,
+      imagePath,
+    }),
   };
 }
 

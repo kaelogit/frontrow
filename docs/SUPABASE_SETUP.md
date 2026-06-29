@@ -147,6 +147,9 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...
 
 NEXT_PUBLIC_APP_URL=https://frontrowly.com
 
+# Google Analytics 4 (optional — page views when set)
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+
 ADMIN_EMAILS=you@frontrowly.com
 ```
 
