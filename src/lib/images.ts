@@ -15,7 +15,6 @@ export const IMAGES = {
     "new-zealand-vs-belgium": "/images/event-new-zealand-belgium.jpg",
     "mexico-vs-usa": "/images/event-mexico-usa.jpg",
     "germany-vs-england": "/images/event-germany-england.jpg",
-    "world-cup-final-match-104": "/images/event-world-cup-final.jpg",
     "germany-vs-winner-match-88": "/images/event-germany-england.jpg",
   },
 } as const;

@@ -56,7 +56,7 @@ UPDATE events SET
   queue_enabled = true,
   scarcity_override = 2,
   min_price = ${minPrice.toFixed(2)},
-  image_url = '/images/event-world-cup-final.jpg'
+  image_url = '/images/events/match-104.jpg'
 WHERE slug = 'world-cup-final-match-104';
 
 INSERT INTO stadium_maps (venue_id, slug, name)

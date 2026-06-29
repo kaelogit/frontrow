@@ -6235,7 +6235,7 @@ export const worldCupMockEvents: EventWithRelations[] = [
     "event_date": "2026-07-19",
     "event_time": "15:00",
     "status": "scheduled",
-    "image_url": "/images/event-world-cup-final.jpg",
+    "image_url": "/images/events/match-104.jpg",
     "min_price": 10104.3,
     "currency": "USD",
     "featured": true,

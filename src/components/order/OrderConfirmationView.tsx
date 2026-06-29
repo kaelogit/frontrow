@@ -140,8 +140,8 @@ function nextSteps(
     return {
       title: "What happens next",
       steps: [
-        "Complete payment via WalletConnect in your wallet",
-        "We confirm your transaction on-chain",
+        "Complete payment in your connected wallet (Trust Wallet, MetaMask, etc.)",
+        "We confirm your USDC transfer on-chain to our wallet",
         "E-tickets are emailed to you once payment clears",
       ],
     };
@@ -167,7 +167,7 @@ function paymentLabel(method: ConfirmationOrder["paymentMethod"], status: OrderS
   if (method === "reservation" && status === "reservation_requested") {
     return "Reservation request";
   }
-  if (method === "crypto") return "Crypto (WalletConnect)";
+  if (method === "crypto") return "Crypto (USDC)";
   if (method === "card") return "Card";
   return "Reservation";
 }

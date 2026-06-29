@@ -33,7 +33,7 @@ SELECT
   true,
   3,
   '104',
-  '/images/event-world-cup-final.jpg',
+  '/images/events/match-104.jpg',
   'Winner Match 101',
   'Winner Match 102'
 FROM competitions c, venues v

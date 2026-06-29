@@ -54,6 +54,8 @@ export const GENERATED_NEUTRAL_MATCH_IMAGES = new Set<string>([
   "100",
   "101",
   "102",
+  "103",
+  "104",
 ]);
 
 const NEUTRAL_RULES =
@@ -264,6 +266,14 @@ export const MATCH_IMAGE_SPECS: MatchImageSpec[] = [
     city: "Miami Gardens",
     round: "third-place",
     scene: "Hard Rock Stadium evening, empty pitch, bronze-medal match mood, tropical night without team colors",
+  },
+  // Final
+  {
+    matchNumber: "104",
+    venue: "MetLife Stadium",
+    city: "East Rutherford",
+    round: "final",
+    scene: "MetLife Stadium colossal dual-bowl at night, New York skyline glow on horizon, empty pristine pitch under full floodlights, golden FIFA World Cup trophy on center circle, ultimate final gravitas",
   },
 ];
 

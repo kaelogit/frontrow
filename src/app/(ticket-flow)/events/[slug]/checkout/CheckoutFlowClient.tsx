@@ -11,6 +11,7 @@ import { TicketFlowFooter } from "@/components/tickets/TicketFlowFooter";
 import { PriceLockBanner } from "@/components/tickets/PriceLockBanner";
 import { OrderSummaryCard } from "@/components/tickets/OrderSummaryCard";
 import { MobileCheckoutBar } from "@/components/tickets/MobileCheckoutBar";
+import { CryptoCheckoutPanel } from "@/components/crypto/CryptoCheckoutPanel";
 import { getEventTicketHref } from "@/lib/events/event-scarcity";
 import {
   clearCheckoutSession,
@@ -39,6 +40,10 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
     useState<ActivePaymentMethod>("reservation");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [cryptoOrder, setCryptoOrder] = useState<{
+    reference: string;
+    total: number;
+  } | null>(null);
 
   useEffect(() => {
     const session = readCheckoutSession();
@@ -97,6 +102,15 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
         throw new Error(data.error ?? "Checkout failed");
       }
 
+      if (paymentMethod === "crypto" && data.crypto) {
+        setCryptoOrder({
+          reference: data.reference as string,
+          total: data.total as number,
+        });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
       clearCheckoutSession();
 
       if (data.checkoutUrl) {
@@ -112,8 +126,9 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
     }
   };
 
-  const mobileBarLabel =
-    step === "payment"
+  const mobileBarLabel = cryptoOrder
+    ? "Pay in wallet"
+    : step === "payment"
       ? paymentMethod === "reservation"
         ? "Submit reservation"
         : "Continue to payment"
@@ -221,6 +236,21 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
                 Continue
               </button>
             </form>
+          ) : cryptoOrder ? (
+            <div className="rounded-xl border border-slate-200 bg-white p-6 sm:p-8">
+              <h2 className="text-2xl font-bold text-slate-900">Complete crypto payment</h2>
+              <p className="mt-2 text-sm text-slate-600">
+                Your order is on hold. Connect your wallet and send USDC to secure your seats.
+              </p>
+              <CryptoCheckoutPanel
+                reference={cryptoOrder.reference}
+                totalUsd={cryptoOrder.total}
+                onPaid={() => {
+                  clearCheckoutSession();
+                  router.push(`/order/${cryptoOrder.reference}/confirmation`);
+                }}
+              />
+            </div>
           ) : (
             <form
               id="checkout-payment-form"
@@ -312,8 +342,8 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
         items={checkout.items}
         currency={checkout.currency}
         primaryLabel={mobileBarLabel}
-        formId={mobileFormId}
-        primaryDisabled={step === "email" && !email.trim()}
+        formId={cryptoOrder ? undefined : mobileFormId}
+        primaryDisabled={cryptoOrder ? true : step === "email" && !email.trim()}
         loading={loading}
       />
 

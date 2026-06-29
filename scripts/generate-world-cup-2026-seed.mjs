@@ -30,7 +30,7 @@ const SLUG_OVERRIDES = {
 
 const IMAGE_OVERRIDES = {
   "new-zealand-vs-belgium": "/images/event-new-zealand-belgium.jpg",
-  "world-cup-final-match-104": "/images/event-world-cup-final.jpg",
+  "world-cup-final-match-104": "/images/events/match-104.jpg",
   "world-cup-qf-match-98": "/images/category-world-cup.jpg",
 };
 

@@ -670,7 +670,7 @@ const MATCHES = {
     scarcity: 3,
     seatMap: true,
     featured: true,
-    imageUrl: "/images/event-world-cup-final.jpg",
+    imageUrl: "/images/events/match-104.jpg",
     listingsFile: "world-cup-match-104-viagogo-listings.mjs",
     seedFile: "world-cup-match-104-full.sql",
     mockFile: "mock-world-cup-match-104-listings.ts",

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { NextResponse } from "next/server";
 import { RESERVATION_HOLD_HOURS } from "@/lib/constants";
 import { generateOrderReference } from "@/lib/utils";
-import { createWalletConnectPayment } from "@/lib/walletconnect-pay";
+import { isCryptoPaymentsEnabled } from "@/lib/crypto/config";
 import { sendReservationEmails } from "@/lib/email";
 import { hasSupabaseConfig, createAdminClient } from "@/lib/supabase/admin";
 import { saveDemoOrder, type AdminOrder } from "@/lib/orders/demo-store";
@@ -65,10 +65,12 @@ export async function POST(request: Request) {
     }
 
     if (data.paymentMethod === "crypto") {
-      return NextResponse.json(
-        { error: "Crypto payments are coming soon. Choose reservation." },
-        { status: 400 }
-      );
+      if (!isCryptoPaymentsEnabled()) {
+        return NextResponse.json(
+          { error: "Crypto payments are not configured. Choose reservation." },
+          { status: 503 }
+        );
+      }
     }
 
     if (hasSupabaseConfig()) {
@@ -190,22 +192,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ reference, status: "reservation_requested" });
     }
 
-    const { paymentId, checkoutUrl } = await createWalletConnectPayment({
+    return NextResponse.json({
       reference,
-      amount: total,
-      currency: "USD",
-      customerEmail: data.customerEmail,
+      status: "pending_payment",
+      total,
+      crypto: true,
     });
-
-    if (hasSupabaseConfig()) {
-      const supabase = createAdminClient();
-      await supabase
-        .from("orders")
-        .update({ payment_external_id: paymentId })
-        .eq("reference", reference);
-    }
-
-    return NextResponse.json({ reference, checkoutUrl, status: "pending_payment" });
   } catch (err) {
     console.error(err);
     return NextResponse.json(
