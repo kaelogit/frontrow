@@ -32,6 +32,11 @@
 /docs/
 /README.md
 
+# local database migrations & seeds (apply via Supabase dashboard / CLI)
+/supabase/migrations/
+/supabase/seed/
+/supabase/seed.sql
+
 # debug
 npm-debug.log*
 yarn-debug.log*
