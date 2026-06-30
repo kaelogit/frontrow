@@ -241,8 +241,11 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
               
 
               <div className="mt-6">
-                <label className="block text-sm font-medium text-slate-700">Email</label>
+                <label htmlFor="checkout-email" className="block text-sm font-medium text-slate-700">
+                  Email
+                </label>
                 <input
+                  id="checkout-email"
                   required
                   type="email"
                   value={email}
@@ -282,8 +285,11 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
 
               <div className="mt-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700">Full name</label>
+                  <label htmlFor="checkout-full-name" className="block text-sm font-medium text-slate-700">
+                    Full name
+                  </label>
                   <input
+                    id="checkout-full-name"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -293,10 +299,11 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700">
+                  <label htmlFor="checkout-phone" className="block text-sm font-medium text-slate-700">
                     Mobile phone <span className="font-normal text-slate-500">(with country code)</span>
                   </label>
                   <input
+                    id="checkout-phone"
                     required
                     type="tel"
                     value={phone}

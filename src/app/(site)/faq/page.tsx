@@ -11,7 +11,7 @@ const faqSections = [
     items: [
       {
         q: "Do I need an account to buy tickets?",
-        a: "No. Frontrowly uses guest checkout only — enter your name and email at checkout. We'll send confirmations and tickets to that email.",
+        a: "No, You can enter your name and email at checkout. We'll send confirmations and tickets to that email.",
       },
       {
         q: "What is a reservation request?",
@@ -19,11 +19,11 @@ const faqSections = [
       },
       {
         q: "Which payment methods do you accept?",
-        a: "We currently accept reservation requests with follow-up payment instructions. Card and crypto options may be added over time — whatever is available will be shown at checkout.",
+        a: "We currently accept reservation requests with follow-up payment instructions, Card payment and crypto — whatever is available will be shown at checkout.",
       },
       {
         q: "Can I buy tickets for someone else?",
-        a: "Yes. Use your email for the order and tell us the attendee names if required. For group or corporate bookings, contact vip@frontrowly.com.",
+        a: "Yes. Use your email for the order and tell us the attendee names if required. For group or corporate bookings, contact tickets@frontrowly.com.",
       },
       {
         q: "How do I check my order status?",
