@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CreditCard, Bitcoin, CalendarCheck, Lock } from "lucide-react";
 import { FrontrowlySpinner } from "@/components/ui/FrontrowlySpinner";
 import { LoadingButton } from "@/components/ui/LoadingButton";
@@ -38,6 +38,7 @@ interface CheckoutFlowClientProps {
 
 export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
   const router = useAppRouter();
+  const leavingCheckoutRef = useRef(false);
   const [checkout, setCheckout] = useState<CheckoutSession | null>(null);
   const [step, setStep] = useState<"email" | "details" | "payment">("email");
   const [name, setName] = useState("");
@@ -78,7 +79,9 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
   useEffect(() => {
     const session = readCheckoutSession();
     if (!session || session.eventSlug !== event.slug) {
-      router.replace(getEventTicketHref(event));
+      if (!leavingCheckoutRef.current) {
+        router.replace(getEventTicketHref(event));
+      }
       return;
     }
     setCheckout(session);
@@ -95,7 +98,8 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
       total,
       currency: session.currency,
     });
-  }, [event, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-check session when event slug changes
+  }, [event.slug]);
 
   if (!checkout) {
     return (
@@ -171,9 +175,9 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
         return;
       }
 
-      clearCheckoutSession();
-
       if (data.checkoutUrl) {
+        leavingCheckoutRef.current = true;
+        clearCheckoutSession();
         trackReservationSubmit({
           slug: event.slug,
           matchNumber: event.match_number,
@@ -197,6 +201,7 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
         currency: checkout.currency,
       });
 
+      leavingCheckoutRef.current = true;
       router.push(`/order/${data.reference}/confirmation`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -352,7 +357,7 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
                 totalUsd={cryptoOrder.total}
                 expiresAt={cryptoOrder.expiresAt}
                 onPaid={() => {
-                  clearCheckoutSession();
+                  leavingCheckoutRef.current = true;
                   router.push(`/order/${cryptoOrder.reference}/confirmation`);
                 }}
               />

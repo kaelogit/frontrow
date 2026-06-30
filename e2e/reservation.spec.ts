@@ -52,16 +52,13 @@ test.describe("Reservation checkout", () => {
         Boolean(response.request().postData())
     );
 
-    await Promise.all([
-      page.waitForURL(/\/order\/[A-Z0-9-]+\/confirmation/, { waitUntil: "commit" }),
-      page.getByRole("button", { name: "Submit reservation" }).click(),
-    ]);
+    await page.getByRole("button", { name: "Submit reservation" }).click();
 
     const response = await checkoutResponse;
     expect(response.ok(), await response.text()).toBeTruthy();
 
     const payload = (await response.json()) as { reference: string };
-    await expect(page).toHaveURL(new RegExp(`/order/${payload.reference}/confirmation`));
+    await page.waitForURL(new RegExp(`/order/${payload.reference}/confirmation`));
 
     await expect(page.getByRole("heading", { name: "Reservation received" })).toBeVisible();
     await expect(page.getByText(customerEmail)).toBeVisible();

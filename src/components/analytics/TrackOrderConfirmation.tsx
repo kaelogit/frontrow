@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { ConfirmationOrder } from "@/lib/orders/confirmation-order";
+import { clearCheckoutSession } from "@/lib/checkout/storage";
 import { trackOrderComplete } from "@/lib/analytics/funnel";
 
 interface TrackOrderConfirmationProps {
@@ -14,6 +15,8 @@ export function TrackOrderConfirmation({ order }: TrackOrderConfirmationProps) {
   useEffect(() => {
     if (tracked.current) return;
     tracked.current = true;
+
+    clearCheckoutSession();
 
     trackOrderComplete({
       reference: order.reference,
