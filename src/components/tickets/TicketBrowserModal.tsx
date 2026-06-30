@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useAppRouter } from "@/lib/navigation/use-app-router";
 import type { EventWithRelations, TicketListing } from "@/types/database";
 import type { SectionZone } from "@/lib/stadium/bc-place-sections";
 import { deriveZonesFromListings, filterListingsByDerivedZone } from "@/lib/stadium/derive-zones";
@@ -49,7 +50,8 @@ export function TicketBrowserModal({
   open,
   onClose,
 }: TicketBrowserModalProps) {
-  const router = useRouter();
+  const router = useAppRouter();
+  const [navigatingListingId, setNavigatingListingId] = useState<string | null>(null);
   const breadcrumbs = useMemo(
     () => buildEventBreadcrumbs(event, "tickets"),
     [event]
@@ -244,6 +246,7 @@ export function TicketBrowserModal({
   };
 
   const handleViewListing = (listing: TicketListing) => {
+    setNavigatingListingId(listing.id);
     router.push(
       `/events/${event.slug}/tickets/review?listing=${listing.id}&qty=${ticketCount}`
     );
@@ -293,6 +296,7 @@ export function TicketBrowserModal({
           isBestDeal={listing.id === bestDealId && discountPercent(listing) > 0}
           onView={handleViewListing}
           onHover={setHighlightedSection}
+          viewLoading={navigatingListingId === listing.id}
         />
       ))}
 
@@ -516,7 +520,7 @@ export function TicketBrowserModal({
 export const TicketsPageClient = TicketBrowserModal;
 
 export function useTicketBrowserOpen(eventSlug: string) {
-  const router = useRouter();
+  const router = useAppRouter();
   const searchParams = useSearchParams();
   const open = searchParams.get("tickets") === "1";
 

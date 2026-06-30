@@ -1,4 +1,5 @@
 import type { PaymentCredential, PaymentCredentialType } from "@/lib/payments/types";
+import { getAdminInboxEmail } from "@/lib/email-config";
 
 const FIELD_LABELS: Record<string, string> = {
   bankName: "Bank name",
@@ -71,5 +72,4 @@ export function expiredMessage(methodType: PaymentCredentialType): string {
   }
 }
 
-export const SUPPORT_EMAIL =
-  process.env.ADMIN_EMAIL ?? process.env.FROM_EMAIL ?? "support@frontrowly.com";
+export const SUPPORT_EMAIL = getAdminInboxEmail();

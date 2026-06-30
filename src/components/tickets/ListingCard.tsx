@@ -1,5 +1,6 @@
 import type { TicketListing } from "@/types/database";
 import { MiniMap } from "@/components/stadium/MiniMap";
+import { FrontrowlySpinner } from "@/components/ui/FrontrowlySpinner";
 import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +14,7 @@ interface ListingCardProps {
   onHover?: (section: string | null) => void;
   onView: (listing: TicketListing) => void;
   isBestDeal?: boolean;
+  viewLoading?: boolean;
 }
 
 export function ListingCard({
@@ -24,6 +26,7 @@ export function ListingCard({
   onView,
   onHover,
   isBestDeal,
+  viewLoading = false,
 }: ListingCardProps) {
   const title =
     listing.product_name ??
@@ -107,12 +110,20 @@ export function ListingCard({
         <button
           type="button"
           onClick={() => onView(listing)}
+          disabled={viewLoading}
           className={cn(
-            "rounded-lg border border-sky-300 bg-white px-3 py-1.5 text-xs font-semibold text-sky-700",
-            "hover:bg-sky-50"
+            "inline-flex min-w-[5.5rem] items-center justify-center gap-1.5 rounded-lg border border-sky-300 bg-white px-3 py-1.5 text-xs font-semibold text-sky-700",
+            "hover:bg-sky-50 disabled:cursor-wait disabled:opacity-70"
           )}
         >
-          View ticket
+          {viewLoading ? (
+            <>
+              <FrontrowlySpinner size="sm" />
+              <span>Loading</span>
+            </>
+          ) : (
+            "View ticket"
+          )}
         </button>
       </div>
     </div>

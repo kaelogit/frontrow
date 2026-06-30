@@ -35,7 +35,7 @@ export default async function AdminEventsPage() {
             </Link>
             <Link
               href="/admin/events/new"
-              className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-black"
+              className="admin-btn-primary"
             >
               + Add event
             </Link>
@@ -46,15 +46,15 @@ export default async function AdminEventsPage() {
       </div>
 
       {!supabaseReady && !shouldUseMockData() && (
-        <p className="mt-4 text-sm text-amber-200/80">
+        <p className="mt-4 text-sm text-amber-900/80">
           Connect Supabase to manage live events. Production will not show demo data.
         </p>
       )}
 
       {shouldUseMockData() && (
-        <p className="mt-4 text-sm text-amber-200/80">
+        <p className="mt-4 text-sm text-amber-900/80">
           Development mode — showing mock events (no Supabase keys in{" "}
-          <code className="text-amber-100">.env.local</code>).
+          <code className="text-amber-950">.env.local</code>).
         </p>
       )}
 
@@ -80,7 +80,7 @@ export default async function AdminEventsPage() {
                     <p className="text-xs text-zinc-500">{event.subtitle}</p>
                     <div className="mt-1 flex flex-wrap gap-2">
                       {eventHasTbdTeams(event) && (
-                        <span className="inline-block rounded bg-amber-500/20 px-1.5 py-0.5 text-xs font-medium text-amber-200">
+                        <span className="inline-block rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-900">
                           TBD teams
                         </span>
                       )}

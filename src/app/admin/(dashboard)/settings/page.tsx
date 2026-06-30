@@ -23,11 +23,20 @@ export default async function AdminSettingsPage() {
         </p>
         <ul className="list-inside list-disc space-y-1 text-zinc-400">
           <li>
-            <code>ADMIN_EMAILS</code> — comma-separated emails allowed to use{" "}
-            <code>/admin/login</code> (must match a Supabase Auth user)
+            <code>ADMIN_EMAILS</code> — your personal email(s) allowed to sign in at{" "}
+            <code>/admin/login</code> only (e.g. <code>you@frontrowly.com</code>)
           </li>
           <li>
-            <code>RESEND_API_KEY</code> — reservation and ticket emails
+            <code>ADMIN_EMAIL</code> — operator inbox that receives new reservation /
+            payment alerts (e.g. <code>support@frontrowly.com</code>). Reply on those
+            emails goes to the customer.
+          </li>
+          <li>
+            <code>FROM_EMAIL</code> — sender on outbound mail (e.g.{" "}
+            <code>tickets@frontrowly.com</code>)
+          </li>
+          <li>
+            <code>RESEND_API_KEY</code> — required for emails to send in production
           </li>
           <li>
             <code>NEXT_PUBLIC_SUPABASE_*</code> — database and admin auth

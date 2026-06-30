@@ -1,8 +1,6 @@
+/** Emails allowed to sign in at /admin/login — not used for notifications. */
 export function getAdminEmails(): string[] {
-  const raw =
-    process.env.ADMIN_EMAILS ??
-    process.env.ADMIN_EMAIL ??
-    "";
+  const raw = process.env.ADMIN_EMAILS ?? "";
 
   return raw
     .split(",")

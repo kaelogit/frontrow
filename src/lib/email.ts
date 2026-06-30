@@ -5,6 +5,12 @@ import {
   fallbackEventContext,
   orderToEmailContext,
 } from "@/emails/event-context";
+import {
+  buildCryptoCheckoutAdminEmail,
+  buildCryptoCheckoutCustomerEmail,
+  buildCryptoPaidAdminEmail,
+  buildCryptoPaidCustomerEmail,
+} from "@/emails/crypto-checkout";
 import { buildReservationAdminEmail } from "@/emails/reservation-admin";
 import { buildReservationCustomerEmail } from "@/emails/reservation-customer";
 import { buildTicketConfirmationEmail } from "@/emails/ticket-confirmation";
@@ -14,6 +20,7 @@ import {
   buildPaymentSubmittedCustomerEmail,
 } from "@/emails/payment-offer";
 import type { EmailOrderItem } from "@/emails/types";
+import { getAdminInboxEmail, getFromEmail, getSupportReplyToEmail } from "@/lib/email-config";
 
 interface ReservationEmailParams {
   reference: string;
@@ -49,28 +56,34 @@ function resolveEventForTicket(params: TicketEmailParams) {
   return fallbackEventContext(params.eventSlug ?? "", params.eventTitle);
 }
 
-export async function sendReservationEmails(params: ReservationEmailParams) {
-  const adminEmail = process.env.ADMIN_EMAIL ?? "admin@frontrowly.com";
-  const fromEmail = process.env.FROM_EMAIL ?? "tickets@frontrowly.com";
+async function getResendClient() {
   const resendKey = process.env.RESEND_API_KEY;
+  if (!resendKey) return null;
+  const { Resend } = await import("resend");
+  return new Resend(resendKey);
+}
+
+export async function sendReservationEmails(params: ReservationEmailParams) {
+  const adminEmail = getAdminInboxEmail();
+  const fromEmail = getFromEmail();
+  const supportReplyTo = getSupportReplyToEmail();
 
   const event = await resolveEventForReservation(params.eventSlug);
   const adminContent = buildReservationAdminEmail({ ...params, event });
   const customerContent = buildReservationCustomerEmail({ ...params, event });
 
-  if (!resendKey) {
+  const resend = await getResendClient();
+  if (!resend) {
     console.log("[Email] Reservation — admin:\n", adminContent.text);
     console.log("[Email] Reservation — customer:\n", customerContent.text);
     return;
   }
 
-  const { Resend } = await import("resend");
-  const resend = new Resend(resendKey);
-
   await Promise.all([
     resend.emails.send({
       from: fromEmail,
       to: adminEmail,
+      replyTo: params.customerEmail,
       subject: adminContent.subject,
       text: adminContent.text,
       html: adminContent.html,
@@ -78,6 +91,7 @@ export async function sendReservationEmails(params: ReservationEmailParams) {
     resend.emails.send({
       from: fromEmail,
       to: params.customerEmail,
+      replyTo: supportReplyTo,
       subject: customerContent.subject,
       text: customerContent.text,
       html: customerContent.html,
@@ -85,9 +99,109 @@ export async function sendReservationEmails(params: ReservationEmailParams) {
   ]);
 }
 
+export async function sendCryptoCheckoutEmails(params: {
+  reference: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  eventSlug: string;
+  total: number;
+  currency?: string;
+}) {
+  const adminEmail = getAdminInboxEmail();
+  const fromEmail = getFromEmail();
+  const supportReplyTo = getSupportReplyToEmail();
+
+  const event = await resolveEventForReservation(params.eventSlug);
+  const adminContent = buildCryptoCheckoutAdminEmail({
+    ...params,
+    eventTitle: event.title,
+  });
+  const customerContent = buildCryptoCheckoutCustomerEmail({
+    customerName: params.customerName,
+    reference: params.reference,
+    total: params.total,
+    currency: params.currency,
+  });
+
+  const resend = await getResendClient();
+  if (!resend) {
+    console.log("[Email] Crypto checkout — admin:\n", adminContent.text);
+    console.log("[Email] Crypto checkout — customer:\n", customerContent.text);
+    return;
+  }
+
+  await Promise.all([
+    resend.emails.send({
+      from: fromEmail,
+      to: adminEmail,
+      replyTo: params.customerEmail,
+      subject: adminContent.subject,
+      text: adminContent.text,
+      html: adminContent.html,
+    }),
+    resend.emails.send({
+      from: fromEmail,
+      to: params.customerEmail,
+      replyTo: supportReplyTo,
+      subject: customerContent.subject,
+      text: customerContent.text,
+      html: customerContent.html,
+    }),
+  ]);
+}
+
+export async function sendCryptoPaidEmails(params: {
+  reference: string;
+  customerName: string;
+  customerEmail: string;
+  total: number;
+  currency?: string;
+  paymentId: string;
+  externalId: string;
+}) {
+  const adminEmail = getAdminInboxEmail();
+  const fromEmail = getFromEmail();
+  const supportReplyTo = getSupportReplyToEmail();
+
+  const customerContent = buildCryptoPaidCustomerEmail({
+    customerName: params.customerName,
+    reference: params.reference,
+    total: params.total,
+    currency: params.currency,
+  });
+  const adminContent = buildCryptoPaidAdminEmail(params);
+
+  const resend = await getResendClient();
+  if (!resend) {
+    console.log("[Email] Crypto paid — customer:\n", customerContent.text);
+    console.log("[Email] Crypto paid — admin:\n", adminContent.text);
+    return;
+  }
+
+  await Promise.all([
+    resend.emails.send({
+      from: fromEmail,
+      to: params.customerEmail,
+      replyTo: supportReplyTo,
+      subject: customerContent.subject,
+      text: customerContent.text,
+      html: customerContent.html,
+    }),
+    resend.emails.send({
+      from: fromEmail,
+      to: adminEmail,
+      replyTo: params.customerEmail,
+      subject: adminContent.subject,
+      text: adminContent.text,
+      html: adminContent.html,
+    }),
+  ]);
+}
+
 export async function sendTicketEmail(params: TicketEmailParams) {
-  const fromEmail = process.env.FROM_EMAIL ?? "tickets@frontrowly.com";
-  const resendKey = process.env.RESEND_API_KEY;
+  const fromEmail = getFromEmail();
+  const supportReplyTo = getSupportReplyToEmail();
 
   const event = resolveEventForTicket(params);
   const items = params.items ?? params.order?.items;
@@ -103,17 +217,16 @@ export async function sendTicketEmail(params: TicketEmailParams) {
     currency,
   });
 
-  if (!resendKey) {
+  const resend = await getResendClient();
+  if (!resend) {
     console.log("[Email] Ticket confirmation:\n", content.text);
     return;
   }
 
-  const { Resend } = await import("resend");
-  const resend = new Resend(resendKey);
-
   await resend.emails.send({
     from: fromEmail,
     to: params.customerEmail,
+    replyTo: supportReplyTo,
     subject: content.subject,
     text: content.text,
     html: content.html,
@@ -144,20 +257,20 @@ export async function sendPaymentOfferEmail(params: {
   token: string;
   expiryMinutes: number;
 }) {
-  const fromEmail = process.env.FROM_EMAIL ?? "tickets@frontrowly.com";
-  const resendKey = process.env.RESEND_API_KEY;
+  const fromEmail = getFromEmail();
+  const supportReplyTo = getSupportReplyToEmail();
   const content = buildPaymentOfferCustomerEmail(params);
 
-  if (!resendKey) {
+  const resend = await getResendClient();
+  if (!resend) {
     console.log("[Email] Payment offer:\n", content.text);
     return;
   }
 
-  const { Resend } = await import("resend");
-  const resend = new Resend(resendKey);
   await resend.emails.send({
     from: fromEmail,
     to: params.customerEmail,
+    replyTo: supportReplyTo,
     subject: content.subject,
     text: content.text,
     html: content.html,
@@ -174,9 +287,9 @@ export async function sendPaymentSubmittedEmails(params: {
   receiptUrl: string;
   customerNote?: string | null;
 }) {
-  const adminEmail = process.env.ADMIN_EMAIL ?? "support@frontrowly.com";
-  const fromEmail = process.env.FROM_EMAIL ?? "tickets@frontrowly.com";
-  const resendKey = process.env.RESEND_API_KEY;
+  const adminEmail = getAdminInboxEmail();
+  const fromEmail = getFromEmail();
+  const supportReplyTo = getSupportReplyToEmail();
 
   const customer = buildPaymentSubmittedCustomerEmail({
     customerName: params.customerName,
@@ -184,18 +297,18 @@ export async function sendPaymentSubmittedEmails(params: {
   });
   const admin = buildPaymentSubmittedAdminEmail(params);
 
-  if (!resendKey) {
+  const resend = await getResendClient();
+  if (!resend) {
     console.log("[Email] Payment submitted — customer:\n", customer.text);
     console.log("[Email] Payment submitted — admin:\n", admin.text);
     return;
   }
 
-  const { Resend } = await import("resend");
-  const resend = new Resend(resendKey);
   await Promise.all([
     resend.emails.send({
       from: fromEmail,
       to: params.customerEmail,
+      replyTo: supportReplyTo,
       subject: customer.subject,
       text: customer.text,
       html: customer.html,
@@ -203,6 +316,7 @@ export async function sendPaymentSubmittedEmails(params: {
     resend.emails.send({
       from: fromEmail,
       to: adminEmail,
+      replyTo: params.customerEmail,
       subject: admin.subject,
       text: admin.text,
       html: admin.html,
@@ -218,9 +332,9 @@ interface ContactEmailParams {
 }
 
 export async function sendContactEmails(params: ContactEmailParams) {
-  const adminEmail = process.env.ADMIN_EMAIL ?? "support@frontrowly.com";
-  const fromEmail = process.env.FROM_EMAIL ?? "tickets@frontrowly.com";
-  const resendKey = process.env.RESEND_API_KEY;
+  const adminEmail = getAdminInboxEmail();
+  const fromEmail = getFromEmail();
+  const supportReplyTo = getSupportReplyToEmail();
 
   const adminSubject = `Contact: ${params.name}${params.orderReference ? ` (${params.orderReference})` : ""}`;
   const adminText = [
@@ -242,14 +356,12 @@ If your enquiry is about an existing order, include your order reference in any 
 
 — The Frontrowly team`;
 
-  if (!resendKey) {
+  const resend = await getResendClient();
+  if (!resend) {
     console.log("[Email] Contact — admin:\n", adminText);
     console.log("[Email] Contact — customer:\n", customerText);
     return;
   }
-
-  const { Resend } = await import("resend");
-  const resend = new Resend(resendKey);
 
   await Promise.all([
     resend.emails.send({
@@ -262,6 +374,7 @@ If your enquiry is about an existing order, include your order reference in any 
     resend.emails.send({
       from: fromEmail,
       to: params.email,
+      replyTo: supportReplyTo,
       subject: customerSubject,
       text: customerText,
     }),

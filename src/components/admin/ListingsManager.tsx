@@ -76,7 +76,7 @@ export function ListingsManager({
   if (!supabaseReady) {
     return (
       <div className="space-y-6">
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200">
+        <div className="admin-callout-warning p-4 text-sm">
           Connect Supabase to add and edit listings. Showing sample data below.
         </div>
         <ListingsTable listings={listings} currency={currency} readOnly />
@@ -466,7 +466,7 @@ function ListingEditor({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-black disabled:opacity-60"
+          className="admin-btn-primary disabled:opacity-60"
         >
           {pending ? "Saving…" : isEdit ? "Update listing" : "Add listing"}
         </button>

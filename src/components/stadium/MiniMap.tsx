@@ -10,6 +10,7 @@ import { PitchMarkings } from "@/components/stadium/PitchMarkings";
 import {
   buildApproximateViewCone,
   buildViewCone,
+  cropViewBoxAroundSection,
   viewConePath,
 } from "@/lib/stadium/section-view-angle";
 import { roundSvgPath } from "@/lib/stadium/svg-coords";
@@ -56,7 +57,7 @@ function resolveAngleViewGeometry(
   };
 }
 
-/** Listing-card thumbnail — full-bowl angle view with view cone + section dot. */
+/** Listing-card thumbnail — cropped angle view: cone from stands into pitch. */
 export function MiniMap({
   mapSlug,
   sectionNumber,
@@ -85,12 +86,17 @@ export function MiniMap({
   const targetSection = geometry.find((g) => g.number === sectionNumber);
 
   const cone = targetSection
-    ? buildViewCone(targetSection, pitch)
-    : buildApproximateViewCone(sectionNumber, pitch);
+    ? buildViewCone(targetSection, pitch, 0.22, { standOffset: 42 })
+    : buildApproximateViewCone(sectionNumber, pitch, 800, 640, { standOffset: 42 });
 
   const anchor = targetSection
     ? { x: targetSection.labelX, y: targetSection.labelY }
     : { x: cone.sx, y: cone.sy };
+
+  const croppedViewBox = cropViewBoxAroundSection(anchor, pitch, viewBox, 36, {
+    minSize: 120,
+    maxSize: 200,
+  });
 
   return (
     <div
@@ -101,12 +107,12 @@ export function MiniMap({
       aria-label={`View angle for section ${sectionNumber}`}
     >
       <svg
-        viewBox={viewBox}
+        viewBox={croppedViewBox}
         className="h-full w-full"
-        preserveAspectRatio="xMidYMid meet"
+        preserveAspectRatio="xMidYMid slice"
         role="img"
       >
-        <rect width="800" height="640" fill="#f1f5f9" />
+        <rect x="-20" y="-20" width="900" height="700" fill="#f1f5f9" />
 
         {geometry.map((sec) => (
           <path
@@ -114,8 +120,8 @@ export function MiniMap({
             d={roundSvgPath(sec.path)}
             fill={sec.number === sectionNumber ? "transparent" : "#e2e8f0"}
             stroke="#cbd5e1"
-            strokeWidth="0.5"
-            opacity={sec.number === sectionNumber ? 0 : 0.85}
+            strokeWidth="1"
+            opacity={sec.number === sectionNumber ? 0 : 0.7}
           />
         ))}
 
@@ -132,23 +138,23 @@ export function MiniMap({
           y={pitch.y}
           width={pitch.width}
           height={pitch.height}
-          strokeWidth={1}
+          strokeWidth={1.2}
         />
 
         <path
           d={roundSvgPath(viewConePath(cone))}
-          fill="rgba(14, 165, 233, 0.4)"
-          stroke="rgba(2, 132, 199, 0.75)"
-          strokeWidth="1.5"
+          fill="rgba(14, 165, 233, 0.45)"
+          stroke="rgba(2, 132, 199, 0.85)"
+          strokeWidth="2"
         />
 
         <circle
           cx={anchor.x}
           cy={anchor.y}
-          r={9}
+          r={10}
           fill="#0284c7"
           stroke="#0c4a6e"
-          strokeWidth="2"
+          strokeWidth="2.5"
         />
       </svg>
 

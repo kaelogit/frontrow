@@ -38,8 +38,8 @@ export default async function AdminOrdersPage({
               href={href}
               className={
                 active
-                  ? "rounded-full bg-accent px-3 py-1 text-xs font-semibold text-black"
-                  : "rounded-full border border-card-border px-3 py-1 text-xs text-zinc-400 hover:text-white"
+                  ? "rounded-full admin-chip-active px-3 py-1 text-xs"
+                  : "rounded-full border border-card-border px-3 py-1 text-xs text-zinc-600 hover:border-zinc-400 hover:text-zinc-900"
               }
             >
               {tab.label}

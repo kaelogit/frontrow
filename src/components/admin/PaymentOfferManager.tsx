@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Copy, Loader2, Pencil, X } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { Copy, Pencil, X } from "lucide-react";
+import { LoadingButton } from "@/components/ui/LoadingButton";
 import {
   EXPIRY_PRESETS,
   formatExpiryDuration,
+  PAY_MENU_METHODS,
   PAYMENT_CREDENTIAL_TYPE_LABELS,
+  CRYPTO_CHECKOUT_MINUTES,
   type PaymentCredentialType,
 } from "@/lib/payments/types";
 import { formatPrice } from "@/lib/utils";
@@ -34,19 +38,48 @@ interface PaymentOfferManagerProps {
   reference: string;
   defaultAmount: number;
   currency: string;
+  orderPaymentMethod?: string;
+  orderStatus?: string;
+  paymentExternalId?: string | null;
+}
+
+type SelectedMethod = PaymentCredentialType | "crypto";
+
+function defaultExpiryForMethod(method: SelectedMethod): number {
+  if (method === "wire_us" || method === "swift") return 48 * 60;
+  if (method === "crypto") return CRYPTO_CHECKOUT_MINUTES;
+  return 14 * 60;
+}
+
+function orderPaymentStatusLabel(status?: string, paymentExternalId?: string | null): string {
+  if (status === "paid" || status === "ticket_issued" || status === "completed") {
+    return "Paid";
+  }
+  if (status === "pending_payment") {
+    return paymentExternalId ? "Payment detected — verify" : "Pending payment";
+  }
+  if (status === "reservation_requested") return "Reservation — awaiting PAY MENU reply";
+  return status?.replace(/_/g, " ") ?? "Unknown";
 }
 
 export function PaymentOfferManager({
   reference,
   defaultAmount,
   currency,
+  orderPaymentMethod,
+  orderStatus,
+  paymentExternalId,
 }: PaymentOfferManagerProps) {
+  const isWebsiteCrypto = orderPaymentMethod === "crypto";
+
   const [credentials, setCredentials] = useState<Credential[]>([]);
   const [offers, setOffers] = useState<OfferRow[]>([]);
-  const [mode, setMode] = useState<"credential" | "crypto">("credential");
+  const [selectedMethod, setSelectedMethod] = useState<SelectedMethod>(
+    isWebsiteCrypto ? "crypto" : "zelle"
+  );
   const [credentialId, setCredentialId] = useState("");
   const [amount, setAmount] = useState(String(defaultAmount));
-  const [expiryMinutes, setExpiryMinutes] = useState(14 * 60);
+  const [expiryMinutes, setExpiryMinutes] = useState(defaultExpiryForMethod("zelle"));
   const [sendEmail, setSendEmail] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -55,6 +88,7 @@ export function PaymentOfferManager({
   const [editAmount, setEditAmount] = useState("");
   const [editExpiry, setEditExpiry] = useState(14 * 60);
   const [editLoading, setEditLoading] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(!isWebsiteCrypto);
 
   const load = async () => {
     const [credRes, offerRes] = await Promise.all([
@@ -63,29 +97,51 @@ export function PaymentOfferManager({
     ]);
     const credData = await credRes.json();
     const offerData = await offerRes.json();
-    setCredentials(credData.credentials ?? []);
-    setOffers(offerData.offers ?? []);
-    if (credData.credentials?.[0]) setCredentialId(credData.credentials[0].id);
+    const creds = (credData.credentials ?? []) as Credential[];
+    const loadedOffers = (offerData.offers ?? []) as OfferRow[];
+    setCredentials(creds);
+    setOffers(loadedOffers);
+    if (isWebsiteCrypto) {
+      setShowCreateForm(loadedOffers.length === 0);
+    }
   };
 
   useEffect(() => {
     load();
   }, [reference]);
 
+  const filteredCredentials = useMemo(
+    () =>
+      selectedMethod === "crypto"
+        ? []
+        : credentials.filter((c) => c.type === selectedMethod),
+    [credentials, selectedMethod]
+  );
+
+  useEffect(() => {
+    if (selectedMethod === "crypto") return;
+    const match = filteredCredentials[0];
+    setCredentialId(match?.id ?? "");
+  }, [selectedMethod, filteredCredentials]);
+
+  useEffect(() => {
+    setExpiryMinutes(defaultExpiryForMethod(selectedMethod));
+  }, [selectedMethod]);
+
   const createLink = async () => {
     setLoading(true);
     setError("");
     try {
       const body =
-        mode === "crypto"
+        selectedMethod === "crypto"
           ? {
-              kind: "crypto",
+              kind: "crypto" as const,
               amount: Number(amount),
               expiry_minutes: expiryMinutes,
               send_email: sendEmail,
             }
           : {
-              kind: "credential",
+              kind: "credential" as const,
               credential_id: credentialId,
               amount: Number(amount),
               expiry_minutes: expiryMinutes,
@@ -126,10 +182,7 @@ export function PaymentOfferManager({
     setEditExpiry(offer.expiry_minutes);
   };
 
-  const patchOffer = async (
-    id: string,
-    body: Record<string, unknown>
-  ) => {
+  const patchOffer = async (id: string, body: Record<string, unknown>) => {
     setEditLoading(true);
     setError("");
     try {
@@ -158,120 +211,49 @@ export function PaymentOfferManager({
     return "active";
   };
 
+  const activeCryptoOffer = offers.find(
+    (o) => o.method_label === "Crypto" && o.status === "active"
+  );
+
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-card-border bg-card p-5">
-        <h2 className="font-semibold">Payment link</h2>
-        <p className="mt-1 text-xs text-zinc-500">
-          After the customer picks a method (A–H), create one link for that method only.
-          Paste the link in your reply email — do not auto-send unless you check the box below.
-        </p>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setMode("credential")}
-            className={`rounded-lg px-3 py-1.5 text-sm ${mode === "credential" ? "bg-accent text-black" : "border border-card-border"}`}
-          >
-            Bank / Cash App / etc.
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode("crypto")}
-            className={`rounded-lg px-3 py-1.5 text-sm ${mode === "crypto" ? "bg-accent text-black" : "border border-card-border"}`}
-          >
-            Crypto
-          </button>
+      {isWebsiteCrypto ? (
+        <div className="admin-callout-info p-4">
+          <h2 className="font-semibold">Website crypto checkout</h2>
+          <p className="mt-1 text-sm text-sky-800/80">
+            Customer chose crypto on the site — no need to pick a method again.
+          </p>
+          <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+            <div>
+              <dt className="text-sky-700/70">Payment status</dt>
+              <dd className="font-medium capitalize text-sky-950">
+                {orderPaymentStatusLabel(orderStatus, paymentExternalId)}
+              </dd>
+            </div>
+            {activeCryptoOffer ? (
+              <div>
+                <dt className="text-sky-700/70">Pay link</dt>
+                <dd className="font-medium text-emerald-800">
+                  Created · {offerStatusLabel(activeCryptoOffer)}
+                </dd>
+              </div>
+            ) : null}
+            {paymentExternalId ? (
+              <div className="sm:col-span-2">
+                <dt className="text-sky-700/70">Transaction</dt>
+                <dd className="break-all font-mono text-xs text-sky-900">{paymentExternalId}</dd>
+              </div>
+            ) : null}
+          </dl>
         </div>
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          {mode === "credential" ? (
-            <label className="block sm:col-span-2">
-              <span className="text-xs text-zinc-500">Account</span>
-              <select
-                value={credentialId}
-                onChange={(e) => setCredentialId(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-card-border bg-black/20 px-3 py-2 text-sm"
-              >
-                {credentials
-                  .filter((c) => c.type !== "crypto")
-                  .map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.label} ({PAYMENT_CREDENTIAL_TYPE_LABELS[c.type]})
-                    </option>
-                  ))}
-              </select>
-            </label>
-          ) : (
-            <p className="sm:col-span-2 rounded-lg border border-card-border/50 bg-black/10 px-3 py-2 text-xs text-zinc-400">
-              Customer chooses BTC, ETH, USDC, etc. on the payment page. You only set amount
-              and timer.
-            </p>
-          )}
-
-          <label className="block">
-            <span className="text-xs text-zinc-500">Amount ({currency})</span>
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-card-border bg-black/20 px-3 py-2 text-sm"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-xs text-zinc-500">Timer (starts when customer begins)</span>
-            <select
-              value={expiryMinutes}
-              onChange={(e) => setExpiryMinutes(Number(e.target.value))}
-              className="mt-1 w-full rounded-lg border border-card-border bg-black/20 px-3 py-2 text-sm"
-            >
-              {EXPIRY_PRESETS.map((p) => (
-                <option key={p.id} value={p.minutes}>
-                  {p.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <label className="mt-3 flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={sendEmail}
-            onChange={(e) => setSendEmail(e.target.checked)}
-          />
-          Email customer
-        </label>
-
-        {error ? <p className="mt-2 text-sm text-red-400">{error}</p> : null}
-        {copied ? <p className="mt-2 text-sm text-emerald-400">Link copied</p> : null}
-
-        <button
-          type="button"
-          disabled={loading || (mode === "credential" && !credentialId)}
-          onClick={createLink}
-          className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-black disabled:opacity-50"
-        >
-          {loading ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" /> Creating…
-            </span>
-          ) : (
-            "Create & copy link"
-          )}
-        </button>
-      </div>
+      ) : null}
 
       {offers.length > 0 ? (
         <div className="rounded-xl border border-card-border bg-card p-5">
-          <h3 className="font-semibold">Links</h3>
+          <h3 className="font-semibold">Payment links</h3>
           <ul className="mt-3 space-y-3 text-sm">
             {offers.map((o) => (
-              <li
-                key={o.id}
-                className="border-b border-card-border/50 pb-3"
-              >
+              <li key={o.id} className="border-b border-card-border/50 pb-3 last:border-0">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <p className="font-medium">{o.method_label}</p>
@@ -305,7 +287,7 @@ export function PaymentOfferManager({
                 </div>
 
                 {editingId === o.id ? (
-                  <div className="mt-3 rounded-lg border border-card-border/50 bg-black/10 p-3">
+                  <div className="mt-3 rounded-lg border border-card-border bg-slate-50 p-3">
                     <div className="grid gap-2 sm:grid-cols-2">
                       <label className="block">
                         <span className="text-xs text-zinc-500">Amount</span>
@@ -313,7 +295,7 @@ export function PaymentOfferManager({
                           type="number"
                           value={editAmount}
                           onChange={(e) => setEditAmount(e.target.value)}
-                          className="mt-1 w-full rounded-lg border border-card-border bg-black/20 px-2 py-1.5 text-sm"
+                          className="mt-1 w-full rounded-lg border border-card-border bg-white px-2 py-1.5 text-sm"
                         />
                       </label>
                       <label className="block">
@@ -321,7 +303,7 @@ export function PaymentOfferManager({
                         <select
                           value={editExpiry}
                           onChange={(e) => setEditExpiry(Number(e.target.value))}
-                          className="mt-1 w-full rounded-lg border border-card-border bg-black/20 px-2 py-1.5 text-sm"
+                          className="mt-1 w-full rounded-lg border border-card-border bg-white px-2 py-1.5 text-sm"
                         >
                           {EXPIRY_PRESETS.map((p) => (
                             <option key={p.id} value={p.minutes}>
@@ -341,7 +323,7 @@ export function PaymentOfferManager({
                             expiry_minutes: editExpiry,
                           })
                         }
-                        className="rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-black disabled:opacity-50"
+                        className="admin-btn-primary px-3 py-1.5 text-xs disabled:opacity-50"
                       >
                         Save
                       </button>
@@ -369,7 +351,7 @@ export function PaymentOfferManager({
                         type="button"
                         disabled={editLoading}
                         onClick={() => patchOffer(o.id, { revoke: true })}
-                        className="rounded-lg border border-red-500/40 px-3 py-1.5 text-xs text-red-400"
+                        className="rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 text-xs text-red-800"
                       >
                         Revoke
                       </button>
@@ -386,6 +368,158 @@ export function PaymentOfferManager({
               </li>
             ))}
           </ul>
+        </div>
+      ) : null}
+
+      {isWebsiteCrypto && offers.length > 0 && !showCreateForm ? (
+        <button
+          type="button"
+          onClick={() => setShowCreateForm(true)}
+          className="text-sm text-zinc-600 underline hover:text-zinc-900"
+        >
+          Create a new crypto link
+        </button>
+      ) : null}
+
+      {showCreateForm ? (
+        <div className="rounded-xl border border-card-border bg-card p-5">
+          <h2 className="font-semibold">
+            {isWebsiteCrypto ? "New crypto link" : "Create payment link"}
+          </h2>
+          {!isWebsiteCrypto ? (
+            <p className="mt-1 text-xs text-zinc-500">
+              Customer replied with a PAY MENU letter — pick that method only, then create the
+              link and paste it in your email.
+            </p>
+          ) : (
+            <p className="mt-1 text-xs text-zinc-500">
+              Only needed if you want a fresh link (e.g. expired). Website checkout already
+              created one above.
+            </p>
+          )}
+
+          {!isWebsiteCrypto ? (
+            <div className="mt-4">
+              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-zinc-500">
+                Customer&apos;s method
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {PAY_MENU_METHODS.map((m) => {
+                  const isCrypto = "isCrypto" in m && m.isCrypto;
+                  const methodKey = isCrypto ? "crypto" : m.type;
+                  const active = selectedMethod === methodKey;
+                  return (
+                    <button
+                      key={m.letter}
+                      type="button"
+                      onClick={() => setSelectedMethod(methodKey)}
+                      className={`rounded-lg px-3 py-2 text-sm ${
+                        active
+                          ? "admin-chip-active"
+                          : "border border-card-border text-zinc-700 hover:border-sky-400 hover:bg-sky-50"
+                      }`}
+                    >
+                      <span className="font-mono text-xs opacity-70">{m.letter}</span>{" "}
+                      {m.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {selectedMethod !== "crypto" ? (
+              <>
+                {filteredCredentials.length === 0 ? (
+                  <p className="sm:col-span-2 admin-callout-warning px-3 py-2 text-xs">
+                    No {PAYMENT_CREDENTIAL_TYPE_LABELS[selectedMethod]} account saved.{" "}
+                    <Link href="/admin/payment-methods" className="underline">
+                      Add one in Payment methods
+                    </Link>
+                    .
+                  </p>
+                ) : filteredCredentials.length === 1 ? (
+                  <p className="sm:col-span-2 rounded-lg border border-card-border bg-slate-50 px-3 py-2 text-xs text-zinc-700">
+                    Account: <strong className="text-zinc-900">{filteredCredentials[0].label}</strong>
+                  </p>
+                ) : (
+                  <label className="block sm:col-span-2">
+                    <span className="text-xs text-zinc-500">
+                      {PAYMENT_CREDENTIAL_TYPE_LABELS[selectedMethod]} account
+                    </span>
+                    <select
+                      value={credentialId}
+                      onChange={(e) => setCredentialId(e.target.value)}
+                      className="mt-1 w-full rounded-lg border border-card-border bg-white px-3 py-2 text-sm"
+                    >
+                      {filteredCredentials.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+              </>
+            ) : (
+              <p className="sm:col-span-2 rounded-lg border border-card-border bg-slate-50 px-3 py-2 text-xs text-zinc-700">
+                Customer picks BTC, ETH, USDC, etc. on the payment page. You only set amount and
+                timer.
+              </p>
+            )}
+
+            <label className="block">
+              <span className="text-xs text-zinc-500">Amount ({currency})</span>
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-card-border bg-white px-3 py-2 text-sm"
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-xs text-zinc-500">Timer (starts when customer begins)</span>
+              <select
+                value={expiryMinutes}
+                onChange={(e) => setExpiryMinutes(Number(e.target.value))}
+                className="mt-1 w-full rounded-lg border border-card-border bg-white px-3 py-2 text-sm"
+              >
+                {EXPIRY_PRESETS.map((p) => (
+                  <option key={p.id} value={p.minutes}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <label className="mt-3 flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={sendEmail}
+              onChange={(e) => setSendEmail(e.target.checked)}
+            />
+            Email customer (usually leave off — paste link yourself)
+          </label>
+
+          {error ? <p className="mt-2 text-sm text-red-700">{error}</p> : null}
+          {copied ? <p className="mt-2 text-sm text-emerald-700">Link copied</p> : null}
+
+          <LoadingButton
+            type="button"
+            disabled={
+              loading ||
+              (selectedMethod !== "crypto" && (!credentialId || filteredCredentials.length === 0))
+            }
+            loading={loading}
+            loadingLabel="Creating…"
+            onClick={createLink}
+            className="mt-4 admin-btn-primary disabled:opacity-50"
+          >
+            Create & copy link
+          </LoadingButton>
         </div>
       ) : null}
     </div>

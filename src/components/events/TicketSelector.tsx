@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Minus, Plus, Shield } from "lucide-react";
+import { FrontrowlySpinner } from "@/components/ui/FrontrowlySpinner";
 import type { EventWithRelations, TicketCategory } from "@/types/database";
 import { formatPrice, cn } from "@/lib/utils";
 
@@ -9,9 +10,15 @@ interface TicketSelectorProps {
   event: EventWithRelations;
   partySize?: number;
   onCheckout: (selections: Record<string, number>) => void;
+  checkoutLoading?: boolean;
 }
 
-export function TicketSelector({ event, partySize, onCheckout }: TicketSelectorProps) {
+export function TicketSelector({
+  event,
+  partySize,
+  onCheckout,
+  checkoutLoading = false,
+}: TicketSelectorProps) {
   const categories = (event.ticket_categories ?? []).filter(
     (cat) => !partySize || cat.quantity_available >= partySize
   );
@@ -68,10 +75,18 @@ export function TicketSelector({ event, partySize, onCheckout }: TicketSelectorP
             </div>
             <button
               type="button"
+              disabled={checkoutLoading}
               onClick={() => onCheckout(quantities)}
-              className="rounded-full bg-gradient-to-r from-sky-500 to-indigo-600 px-8 py-3 font-semibold text-white shadow-md hover:brightness-105"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-indigo-600 px-8 py-3 font-semibold text-white shadow-md hover:brightness-105 disabled:cursor-wait disabled:opacity-80"
             >
-              Continue
+              {checkoutLoading ? (
+                <>
+                  <FrontrowlySpinner size="sm" className="border-white/30 border-t-white border-r-white" />
+                  Loading…
+                </>
+              ) : (
+                "Continue"
+              )}
             </button>
           </div>
           <p className="mt-3 flex items-center gap-1.5 text-xs text-slate-500">

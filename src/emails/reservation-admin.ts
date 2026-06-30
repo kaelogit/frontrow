@@ -55,7 +55,7 @@ ${formatEmailItemsText(params.items, currency)}
 
 Total: ${totalFormatted}
 
-Reply to the customer with payment options, then confirm in admin:
+Reply to the customer with payment options (use Reply on this email), then confirm in admin:
 ${adminUrl}
 `.trim();
 
@@ -76,7 +76,7 @@ ${adminUrl}
       ])}
       ${renderEmailItemsTable(params.items, currency)}
       ${emailTotalRow(totalFormatted)}
-      ${emailMuted("Reply to the customer with payment options, then update the order in admin.")}
+      ${emailMuted("Hit <strong>Reply</strong> to email the customer directly — their address is set as the reply-to.")}
       ${emailButton(adminUrl, "Open admin orders")}
     `,
   });

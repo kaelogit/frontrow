@@ -22,7 +22,7 @@ export default async function AdminOrderDetailPage({
     <div>
       <Link
         href="/admin/orders"
-        className="text-sm text-zinc-500 hover:text-zinc-300"
+        className="text-sm text-zinc-500 hover:text-zinc-800"
       >
         ← Back to orders
       </Link>
@@ -128,6 +128,9 @@ export default async function AdminOrderDetailPage({
           reference={order.reference}
           defaultAmount={order.total_amount}
           currency={order.currency}
+          orderPaymentMethod={order.payment_method}
+          orderStatus={order.status}
+          paymentExternalId={order.payment_external_id}
         />
       </section>
 

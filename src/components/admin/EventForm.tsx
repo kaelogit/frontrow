@@ -63,9 +63,9 @@ export function EventForm({ mode, lookups, event, supabaseReady }: EventFormProp
 
   if (!supabaseReady) {
     return (
-      <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-6 text-sm text-amber-200">
+      <div className="admin-callout-warning p-6 text-sm">
         <p className="font-medium">Supabase required</p>
-        <p className="mt-2 text-amber-200/80">
+        <p className="mt-2 text-amber-900/80">
           Add your Supabase keys to <code>.env.local</code>, run migrations, then
           seed competitions, teams, and venues before creating events.
         </p>
@@ -166,13 +166,13 @@ export function EventForm({ mode, lookups, event, supabaseReady }: EventFormProp
 
       <section className="space-y-4 rounded-xl border border-card-border bg-card p-5">
         <h2 className="font-semibold">Teams & venue</h2>
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100/90">
-          <p className="font-medium text-amber-50">Knockout / TBD matches</p>
-          <p className="mt-1 text-xs leading-relaxed text-amber-100/80">
+        <div className="admin-callout-warning px-4 py-3 text-sm">
+          <p className="font-medium">Knockout / TBD matches</p>
+          <p className="mt-1 text-xs leading-relaxed text-amber-900/80">
             Leave team dropdowns on <strong>TBD</strong> and use bracket labels (e.g.{" "}
             <em>Winner Match 93</em>). When teams are confirmed, pick them below — labels
             clear automatically on save. You can also bulk-assign via SQL — see{" "}
-            <code className="text-amber-50">docs/ADMIN_SQL_TEMPLATES.md</code>.
+            <code className="text-amber-950">docs/ADMIN_SQL_TEMPLATES.md</code>.
           </p>
         </div>
 
@@ -433,7 +433,7 @@ export function EventForm({ mode, lookups, event, supabaseReady }: EventFormProp
         <button
           type="submit"
           disabled={pending}
-          className="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-black disabled:opacity-60"
+          className="admin-btn-primary px-5 py-2.5 disabled:opacity-60"
         >
           {pending ? "Saving…" : mode === "create" ? "Create event" : "Save changes"}
         </button>

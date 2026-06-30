@@ -11,6 +11,7 @@ import { verifyCryptoPayment } from "@/lib/crypto/verify-payment";
 import { hasSupabaseConfig, createAdminClient } from "@/lib/supabase/admin";
 
 import { getDemoOrder, updateDemoOrder } from "@/lib/orders/demo-store";
+import { sendCryptoPaidEmails } from "@/lib/email";
 
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { RATE_LIMITS } from "@/lib/rate-limit-config";
@@ -113,7 +114,9 @@ async function loadPendingCryptoOrder(reference: string) {
 
       .from("orders")
 
-      .select("id, status, payment_method, total_amount, payment_external_id")
+      .select(
+        "id, reference, status, payment_method, total_amount, payment_external_id, customer_name, customer_email, currency"
+      )
 
       .eq("reference", reference)
 
@@ -124,7 +127,10 @@ async function loadPendingCryptoOrder(reference: string) {
     if (error || !order) return null;
 
     return {
-
+      reference: order.reference as string,
+      customerName: order.customer_name as string,
+      customerEmail: order.customer_email as string,
+      currency: (order.currency as string) ?? "USD",
       totalUsd: Number(order.total_amount),
 
       status: order.status as string,
@@ -160,7 +166,10 @@ async function loadPendingCryptoOrder(reference: string) {
   if (!demo) return null;
 
   return {
-
+    reference: demo.reference,
+    customerName: demo.customer_name,
+    customerEmail: demo.customer_email,
+    currency: demo.currency,
     totalUsd: demo.total_amount,
 
     status: demo.status,
@@ -291,6 +300,16 @@ export async function POST(request: Request) {
 
 
     await order.markPaid(externalId);
+
+    await sendCryptoPaidEmails({
+      reference: order.reference,
+      customerName: order.customerName,
+      customerEmail: order.customerEmail,
+      total: order.totalUsd,
+      currency: order.currency,
+      paymentId,
+      externalId,
+    });
 
     return NextResponse.json({ ok: true, status: "paid" });
 

@@ -88,15 +88,29 @@ export const PAYMENT_CREDENTIAL_TYPE_LABELS: Record<PaymentCredentialType, strin
   other: "Other",
 };
 
+/** PAY MENU letters — admin picks one method per link (matches customer reply). */
+export const PAY_MENU_METHODS = [
+  { letter: "A", type: "zelle" as const, label: "Zelle" },
+  { letter: "B", type: "apple_pay" as const, label: "Apple Pay" },
+  { letter: "C", type: "cashapp" as const, label: "Cash App" },
+  { letter: "D", type: "wire_us" as const, label: "US Wire" },
+  { letter: "E", type: "swift" as const, label: "SWIFT" },
+  { letter: "F", type: "crypto" as const, label: "Crypto", isCrypto: true },
+] as const;
+
+export type PayMenuMethod = (typeof PAY_MENU_METHODS)[number];
+
 export const EXPIRY_PRESETS = [
   { id: "15m", label: "15 minutes", minutes: 15 },
-  { id: "1h", label: "1 hour", minutes: 60 },
-  { id: "14h", label: "14 hours", minutes: 14 * 60 },
   { id: "25m", label: "25 minutes", minutes: 25 },
+  { id: "30m", label: "30 minutes", minutes: 30 },
+  { id: "1h", label: "1 hour", minutes: 60 },
+  { id: "1h45m", label: "1 hour 45 minutes", minutes: 105 },
+  { id: "14h", label: "14 hours", minutes: 14 * 60 },
   { id: "48h", label: "48 hours", minutes: 48 * 60 },
 ] as const;
 
-export const CRYPTO_CHECKOUT_MINUTES = 25;
+export const CRYPTO_CHECKOUT_MINUTES = 105;
 
 export function formatExpiryDuration(minutes: number): string {
   const preset = EXPIRY_PRESETS.find((p) => p.minutes === minutes);

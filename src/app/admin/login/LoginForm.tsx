@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { LoadingButton } from "@/components/ui/LoadingButton";
 import { createClient } from "@/lib/supabase/client";
 
 interface LoginFormProps {
@@ -109,13 +110,14 @@ export function LoginForm({ error, nextPath }: LoginFormProps) {
           </p>
         )}
 
-        <button
+        <LoadingButton
           type="submit"
-          disabled={loading}
-          className="w-full rounded-lg bg-accent py-2.5 text-sm font-semibold text-black disabled:opacity-60"
+          loading={loading}
+          loadingLabel="Signing in…"
+          className="admin-btn-primary w-full py-2.5 disabled:opacity-60"
         >
-          {loading ? "Signing in…" : "Sign in"}
-        </button>
+          Sign in
+        </LoadingButton>
       </form>
 
       <Link href="/" className="mt-8 inline-block text-xs text-zinc-600 hover:text-zinc-400">

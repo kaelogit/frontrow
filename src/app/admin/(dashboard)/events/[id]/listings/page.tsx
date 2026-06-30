@@ -74,7 +74,7 @@ export default async function AdminEventListingsPage({
       </div>
 
       {!event.seat_map_enabled && (
-        <p className="mt-4 text-sm text-amber-200/80">
+        <p className="mt-4 text-sm text-amber-900/80">
           Tip: enable <strong>seat map</strong> on the event to use the interactive
           ticket flow.
         </p>

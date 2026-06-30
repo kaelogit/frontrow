@@ -106,8 +106,40 @@ body {
   will-change: transform;
 }
 
+@keyframes frontrowly-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+.animate-frontrowly-progress {
+  animation: frontrowly-progress 1s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee {
     animation: none;
+  }
+}
+
+/* Admin — high-contrast on light shell (avoid washed-out amber overlays) */
+@layer components {
+  .admin-btn-primary {
+    @apply rounded-lg bg-sky-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-800 disabled:opacity-60;
+  }
+
+  .admin-chip-active {
+    @apply bg-sky-700 font-semibold text-white;
+  }
+
+  .admin-callout-warning {
+    @apply rounded-xl border border-amber-300 bg-amber-50 text-amber-950;
+  }
+
+  .admin-callout-info {
+    @apply rounded-xl border border-sky-300 bg-sky-50 text-sky-950;
   }
 }

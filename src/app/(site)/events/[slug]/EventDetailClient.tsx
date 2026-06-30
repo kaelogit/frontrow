@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Calendar, MapPin, Shield, Ticket } from "lucide-react";
+import { FrontrowlySpinner } from "@/components/ui/FrontrowlySpinner";
+import { useAppRouter } from "@/lib/navigation/use-app-router";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { TicketSelector } from "@/components/events/TicketSelector";
 import { MatchTeamsRow } from "@/components/events/MatchTeamsRow";
@@ -25,7 +26,8 @@ interface EventDetailClientProps {
 }
 
 export function EventDetailClient({ event, listings = [] }: EventDetailClientProps) {
-  const router = useRouter();
+  const router = useAppRouter();
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const usesSeatMap = event.seat_map_enabled === true;
   const match = getEventMatchDisplay(event);
   const breadcrumbs = buildEventBreadcrumbs(event);
@@ -40,6 +42,7 @@ export function EventDetailClient({ event, listings = [] }: EventDetailClientPro
   }, [event.slug, event.match_number, event.competition?.slug]);
 
   const handleCheckout = (quantities: Record<string, number>) => {
+    setCheckoutLoading(true);
     const items = Object.entries(quantities)
       .filter(([, qty]) => qty > 0)
       .map(([categoryId, quantity]) => {
@@ -164,9 +167,11 @@ export function EventDetailClient({ event, listings = [] }: EventDetailClientPro
                     <p className="mt-1 text-sm text-slate-500">
                       Choose your category and quantity
                     </p>
-                    <div className="mt-6">
-                      <TicketSelector event={event} onCheckout={handleCheckout} />
-                    </div>
+                    <TicketSelector
+                      event={event}
+                      onCheckout={handleCheckout}
+                      checkoutLoading={checkoutLoading}
+                    />
                   </>
                 )}
               </div>

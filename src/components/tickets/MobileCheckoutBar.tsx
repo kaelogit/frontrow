@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { FrontrowlySpinner } from "@/components/ui/FrontrowlySpinner";
 import type { CheckoutItem } from "@/lib/checkout/storage";
 import { formatPrice } from "@/lib/utils";
 
@@ -42,7 +42,7 @@ export function MobileCheckoutBar({
           disabled={primaryDisabled || loading}
           className="flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+          {loading && <FrontrowlySpinner size="sm" className="border-white/30 border-t-white border-r-white" />}
           {primaryLabel}
         </button>
       </div>

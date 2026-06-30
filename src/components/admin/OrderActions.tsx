@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { OrderStatus } from "@/types/database";
+import { LoadingButton } from "@/components/ui/LoadingButton";
 
 type OrderAction =
   | "confirm_payment"
@@ -81,25 +82,26 @@ export function OrderActions({ reference, status }: OrderActionsProps) {
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
         {actions.map(({ action, label, variant }) => (
-          <button
+          <LoadingButton
             key={action}
-            type="button"
             disabled={loading !== null}
+            loading={loading === action}
+            loadingLabel={label}
             onClick={() => runAction(action)}
             className={
               variant === "primary"
-                ? "rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-black disabled:opacity-60"
+                ? "admin-btn-primary"
                 : variant === "danger"
-                  ? "rounded-lg border border-red-500/40 px-4 py-2 text-sm text-red-300 disabled:opacity-60"
+                  ? "rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-800 disabled:opacity-60"
                   : "rounded-lg border border-card-border px-4 py-2 text-sm disabled:opacity-60"
             }
           >
-            {loading === action ? "Working…" : label}
-          </button>
+            {label}
+          </LoadingButton>
         ))}
       </div>
       {error && (
-        <p className="text-sm text-red-400" role="alert">
+        <p className="text-sm text-red-700" role="alert">
           {error}
         </p>
       )}

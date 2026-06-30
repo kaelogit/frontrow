@@ -39,7 +39,7 @@ export default async function AdminDashboardPage() {
             href={stat.href}
             className={`rounded-xl border bg-card p-5 transition hover:border-primary/40 ${
               stat.highlight
-                ? "border-amber-500/40 bg-amber-500/5"
+                ? "border-amber-300 bg-amber-50"
                 : "border-card-border"
             }`}
           >
@@ -50,7 +50,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       {stats.openReservations > 0 && (
-        <div className="mt-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200">
+        <div className="mt-6 admin-callout-warning p-4 text-sm">
           <strong>{stats.openReservations} reservation request(s)</strong> waiting for
           review.{" "}
           <Link href="/admin/orders?status=reservation_requested" className="underline">
@@ -164,7 +164,7 @@ export default async function AdminDashboardPage() {
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
             href="/admin/events/new"
-            className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-black"
+            className="admin-btn-primary"
           >
             New event
           </Link>

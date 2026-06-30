@@ -118,6 +118,8 @@ Method: ${params.methodLabel}
 Amount: ${amount}
 Receipt: ${params.receiptUrl}
 ${params.customerNote ? `Note: ${params.customerNote}` : ""}
+
+Reply to this email to contact the customer.
 `.trim();
 
   const html = emailLayout({
@@ -132,6 +134,7 @@ ${params.customerNote ? `Note: ${params.customerNote}` : ""}
       ${emailParagraph(`Method: ${escapeHtml(params.methodLabel)}`)}
       ${emailParagraph(`<a href="${escapeHtml(params.receiptUrl)}">View receipt</a>`)}
       ${params.customerNote ? emailParagraph(escapeHtml(params.customerNote)) : ""}
+      ${emailMuted("Reply to this email to contact the customer directly.")}
     `,
   });
 

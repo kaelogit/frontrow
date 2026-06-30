@@ -1,4 +1,5 @@
 import type { CheckoutItem } from "@/lib/checkout/storage";
+import { FrontrowlySpinner } from "@/components/ui/FrontrowlySpinner";
 import { formatPrice } from "@/lib/utils";
 
 interface OrderSummaryCardProps {
@@ -9,8 +10,8 @@ interface OrderSummaryCardProps {
   onContinue?: () => void;
   continueLabel?: string;
   continueDisabled?: boolean;
+  continueLoading?: boolean;
 }
-
 export function OrderSummaryCard({
   items,
   currency,
@@ -19,6 +20,7 @@ export function OrderSummaryCard({
   onContinue,
   continueLabel = "Continue",
   continueDisabled,
+  continueLoading = false,
 }: OrderSummaryCardProps) {
   const totalTickets = items.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
@@ -74,9 +76,10 @@ export function OrderSummaryCard({
         <button
           type="button"
           onClick={onContinue}
-          disabled={continueDisabled}
-          className="mt-5 w-full rounded-lg bg-emerald-600 py-3.5 text-base font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+          disabled={continueDisabled || continueLoading}
+          className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 py-3.5 text-base font-semibold text-white hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60"
         >
+          {continueLoading && <FrontrowlySpinner size="sm" className="border-white/30 border-t-white border-r-white" />}
           {continueLabel}
         </button>
       )}

@@ -1,12 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useAppRouter } from "@/lib/navigation/use-app-router";
 import type { EventWithRelations, TicketListing } from "@/types/database";
 import { formatPrice } from "@/lib/utils";
 import { TicketFlowHeader } from "@/components/tickets/TicketFlowHeader";
 import { TicketFlowFooter } from "@/components/tickets/TicketFlowFooter";
 import { ScarcityBanner } from "@/components/tickets/ScarcityBanner";
-import { PriceLockBanner } from "@/components/tickets/PriceLockBanner";
 import { OrderSummaryCard } from "@/components/tickets/OrderSummaryCard";
 import { MobileCheckoutBar } from "@/components/tickets/MobileCheckoutBar";
 import { ListingTrustDetails } from "@/components/tickets/ListingTrustDetails";
@@ -44,7 +44,8 @@ export function ListingReviewClient({
   listing,
   ticketCount,
 }: ListingReviewClientProps) {
-  const router = useRouter();
+  const router = useAppRouter();
+  const [continuing, setContinuing] = useState(false);
   const scarcity = event.scarcity_override ?? scarcityPercent([listing]);
   const label = listingLabel(listing);
   const sectionTitle = listing.section_number
@@ -64,6 +65,7 @@ export function ListingReviewClient({
   };
 
   const handleContinue = () => {
+    setContinuing(true);
     saveCheckoutSession({
       eventId: event.id,
       eventSlug: event.slug,
@@ -86,8 +88,8 @@ export function ListingReviewClient({
 
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6 pb-28 sm:px-6 lg:flex-row lg:pb-6">
         <div className="flex-1">
-          <div className="mb-4 lg:hidden">
-            <PriceLockBanner />
+          <div className="mb-4 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 lg:hidden">
+            Review your selection. The price lock starts when you continue to checkout.
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-6 sm:p-8">
@@ -159,13 +161,16 @@ export function ListingReviewClient({
         </div>
 
         <aside className="hidden w-full shrink-0 space-y-4 lg:block lg:w-[380px]">
-          <PriceLockBanner />
+          <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+            Review your selection. The price lock starts when you continue to checkout.
+          </div>
           <OrderSummaryCard
             items={[checkoutItem]}
             currency={event.currency}
             urgencyNote={urgencyNote(listing, ticketCount)}
             showContinue
             onContinue={handleContinue}
+            continueLoading={continuing}
           />
         </aside>
       </div>
@@ -175,6 +180,7 @@ export function ListingReviewClient({
         currency={event.currency}
         primaryLabel="Continue"
         onPrimary={handleContinue}
+        loading={continuing}
       />
 
       <TicketFlowFooter showGuarantee={false} />

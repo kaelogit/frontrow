@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { isAdminEmail } from "@/lib/auth/admin";
+import { isAdminEmail, getAdminEmails } from "@/lib/auth/admin";
 import { createClient } from "@/lib/supabase/server";
 
 const bodySchema = z.object({
@@ -60,15 +60,4 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ ok: true, email });
-}
-
-function getAdminEmails(): string[] {
-  const raw =
-    process.env.ADMIN_EMAILS ??
-    process.env.ADMIN_EMAIL ??
-    "";
-  return raw
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
 }

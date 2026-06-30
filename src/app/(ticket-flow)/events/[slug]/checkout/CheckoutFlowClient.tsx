@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { CreditCard, Bitcoin, CalendarCheck, Loader2, Lock } from "lucide-react";
+import { CreditCard, Bitcoin, CalendarCheck, Lock } from "lucide-react";
+import { FrontrowlySpinner } from "@/components/ui/FrontrowlySpinner";
+import { LoadingButton } from "@/components/ui/LoadingButton";
+import { useAppRouter } from "@/lib/navigation/use-app-router";
 import type { EventWithRelations } from "@/types/database";
 import { PAYMENT_METHODS } from "@/lib/constants";
 import type { ActivePaymentMethod } from "@/lib/constants";
@@ -35,7 +37,7 @@ interface CheckoutFlowClientProps {
 }
 
 export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const [checkout, setCheckout] = useState<CheckoutSession | null>(null);
   const [step, setStep] = useState<"email" | "details" | "payment">("email");
   const [name, setName] = useState("");
@@ -98,7 +100,7 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
   if (!checkout) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-100">
-        <Loader2 className="h-8 w-8 animate-spin text-sky-500" />
+        <FrontrowlySpinner size="lg" />
       </div>
     );
   }
@@ -219,6 +221,11 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
         : "checkout-payment-form";
 
   const breadcrumbs = buildEventBreadcrumbs(event, "checkout");
+  const priceLockKey = checkout
+    ? `${checkout.eventSlug}:${checkout.items
+        .map((item) => `${item.listingId ?? item.categoryId}:${item.quantity}`)
+        .join(",")}`
+    : null;
 
   return (
     <Web3Provider>
@@ -228,7 +235,7 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-4 py-6 pb-28 sm:px-6 sm:py-8 lg:flex-row lg:pb-8">
         <div className="flex-1 lg:order-1">
           <div className="mb-4 lg:hidden">
-            <PriceLockBanner />
+            <PriceLockBanner active lockKey={priceLockKey} />
           </div>
 
           {step === "email" ? (
@@ -427,20 +434,20 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
                 </p>
               )}
 
-              <button
+              <LoadingButton
                 type="submit"
-                disabled={loading}
-                className="mt-8 hidden w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 py-3.5 font-semibold text-white hover:bg-emerald-700 disabled:opacity-60 lg:flex"
+                loading={loading}
+                loadingLabel={mobileBarLabel}
+                className="mt-8 hidden w-full rounded-lg bg-emerald-600 py-3.5 font-semibold text-white hover:bg-emerald-700 disabled:opacity-60 lg:flex"
               >
-                {loading && <Loader2 className="h-5 w-5 animate-spin" />}
                 {mobileBarLabel}
-              </button>
+              </LoadingButton>
             </form>
           )}
         </div>
 
         <aside className="hidden w-full shrink-0 space-y-4 lg:block lg:w-[380px]">
-          <PriceLockBanner />
+          <PriceLockBanner active lockKey={priceLockKey} />
           <OrderSummaryCard items={checkout.items} currency={checkout.currency} />
           {!cryptoOrder && step === "payment" && <CheckoutTrustLinks />}
         </aside>

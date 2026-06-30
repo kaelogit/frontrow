@@ -3,7 +3,9 @@ import { NextResponse } from "next/server";
 import { RESERVATION_HOLD_HOURS } from "@/lib/constants";
 import { generateOrderReference } from "@/lib/utils";
 import { isCryptoPaymentsEnabled } from "@/lib/crypto/config";
-import { sendReservationEmails } from "@/lib/email";
+import { sendReservationEmails, sendCryptoCheckoutEmails } from "@/lib/email";
+import { createCryptoOffer } from "@/lib/payments/store";
+import { CRYPTO_CHECKOUT_MINUTES } from "@/lib/payments/types";
 import { hasSupabaseConfig, createAdminClient } from "@/lib/supabase/admin";
 import { saveDemoOrder, type AdminOrder } from "@/lib/orders/demo-store";
 import { enforceRateLimit } from "@/lib/rate-limit";
@@ -105,6 +107,8 @@ export async function POST(request: Request) {
       payment_external_id: null as string | null,
     };
 
+    let orderId: string | null = null;
+
     if (hasSupabaseConfig()) {
       const supabase = createAdminClient();
 
@@ -149,6 +153,8 @@ export async function POST(request: Request) {
         console.error(itemsError);
         return NextResponse.json({ error: "Failed to create order items" }, { status: 500 });
       }
+
+      orderId = order.id;
     } else {
       const demoOrder: AdminOrder = {
         id: reference,
@@ -178,6 +184,7 @@ export async function POST(request: Request) {
         })),
       };
       saveDemoOrder(demoOrder);
+      orderId = demoOrder.id;
     }
 
     if (isReservation) {
@@ -193,6 +200,30 @@ export async function POST(request: Request) {
 
       return NextResponse.json({ reference, status: "reservation_requested" });
     }
+
+    if (data.paymentMethod === "crypto" && orderId) {
+      try {
+        await createCryptoOffer({
+          order_id: orderId,
+          order_reference: reference,
+          amount: total,
+          currency: "USD",
+          expiry_minutes: CRYPTO_CHECKOUT_MINUTES,
+          created_by: "website-checkout",
+        });
+      } catch (err) {
+        console.error("crypto offer auto-create:", err);
+      }
+    }
+
+    await sendCryptoCheckoutEmails({
+      reference,
+      customerName: data.customerName,
+      customerEmail: data.customerEmail,
+      customerPhone: data.customerPhone,
+      eventSlug: data.eventSlug,
+      total,
+    });
 
     return NextResponse.json({
       reference,

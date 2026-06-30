@@ -121,7 +121,7 @@ export function PaymentCredentialsManager() {
             <input
               value={label}
               onChange={(e) => setLabel(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-card-border bg-black/20 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-card-border bg-white px-3 py-2 text-sm"
               placeholder="Chase wire #1"
             />
           </label>
@@ -131,7 +131,7 @@ export function PaymentCredentialsManager() {
               value={type}
               onChange={(e) => setType(e.target.value as PaymentCredentialType)}
               disabled={Boolean(editingId)}
-              className="mt-1 w-full rounded-lg border border-card-border bg-black/20 px-3 py-2 text-sm disabled:opacity-60"
+              className="mt-1 w-full rounded-lg border border-card-border bg-white px-3 py-2 text-sm disabled:opacity-60"
             >
               {(Object.keys(PAYMENT_CREDENTIAL_TYPE_LABELS) as PaymentCredentialType[])
                 .filter((t) => t !== "crypto")
@@ -148,7 +148,7 @@ export function PaymentCredentialsManager() {
               <input
                 value={details[key] ?? ""}
                 onChange={(e) => setDetails((d) => ({ ...d, [key]: e.target.value }))}
-                className="mt-1 w-full rounded-lg border border-card-border bg-black/20 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-card-border bg-white px-3 py-2 text-sm"
               />
             </label>
           ))}
@@ -158,7 +158,7 @@ export function PaymentCredentialsManager() {
             type="button"
             disabled={loading || !label.trim()}
             onClick={save}
-            className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-black disabled:opacity-50"
+            className="admin-btn-primary disabled:opacity-50"
           >
             {editingId ? "Update" : "Save"}
           </button>

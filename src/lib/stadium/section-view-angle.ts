@@ -52,8 +52,10 @@ export function approximateSectionPosition(
 export function buildViewCone(
   section: SectionGeometry,
   pitch: PitchRect,
-  spread = 0.22
+  spread = 0.22,
+  options?: { standOffset?: number }
 ): ViewCone {
+  const standOffset = options?.standOffset ?? 36;
   const { cx, cy } = pitchCenter(pitch);
   const sx = section.labelX;
   const sy = section.labelY;
@@ -66,20 +68,27 @@ export function buildViewCone(
   const px = -uy;
   const py = ux;
 
-  const nearW = 14;
-  const farW = 42 + len * spread;
+  // Wide end sits in the stands, outside the pitch
+  const bx = sx - ux * standOffset;
+  const by = sy - uy * standOffset;
+  const nearW = 20 + len * 0.07;
+
+  // Narrow end spreads across the pitch (field-facing side, not the center dot)
+  const pitchFaceX = cx - ux * pitch.width * 0.22;
+  const pitchFaceY = cy - uy * pitch.height * 0.22;
+  const farW = Math.max(pitch.width, pitch.height) * (0.32 + spread * 0.5);
 
   return {
     sx,
     sy,
-    nx1: sx + px * nearW,
-    ny1: sy + py * nearW,
-    nx2: sx - px * nearW,
-    ny2: sy - py * nearW,
-    fx1: cx + px * farW - ux * 8,
-    fy1: cy + py * farW - uy * 8,
-    fx2: cx - px * farW - ux * 8,
-    fy2: cy - py * farW - uy * 8,
+    nx1: bx + px * nearW,
+    ny1: by + py * nearW,
+    nx2: bx - px * nearW,
+    ny2: by - py * nearW,
+    fx1: pitchFaceX + px * farW,
+    fy1: pitchFaceY + py * farW,
+    fx2: pitchFaceX - px * farW,
+    fy2: pitchFaceY - py * farW,
   };
 }
 
@@ -87,10 +96,16 @@ export function buildApproximateViewCone(
   sectionNumber: string,
   pitch: PitchRect,
   width = 800,
-  height = 640
+  height = 640,
+  options?: { standOffset?: number }
 ): ViewCone {
   const { x, y } = approximateSectionPosition(sectionNumber, width, height);
-  return buildViewCone({ number: sectionNumber, path: "", labelX: x, labelY: y }, pitch);
+  return buildViewCone(
+    { number: sectionNumber, path: "", labelX: x, labelY: y },
+    pitch,
+    0.22,
+    options
+  );
 }
 
 export function viewConePath(cone: ViewCone): string {
@@ -108,21 +123,24 @@ export function cropViewBoxAroundSection(
   anchor: { x: number; y: number },
   pitch: PitchRect,
   fullViewBox: string,
-  padding = 100
+  padding = 100,
+  options?: { minSize?: number; maxSize?: number }
 ): string {
+  const minSize = options?.minSize ?? 160;
+  const maxSize = options?.maxSize ?? 280;
   const parts = fullViewBox.split(/\s+/).map(Number);
   const [vbMinX, vbMinY, vbW, vbH] = parts;
   const pcx = pitch.x + pitch.width / 2;
   const pcy = pitch.y + pitch.height / 2;
 
-  let left = Math.min(anchor.x, pcx, pitch.x) - padding;
-  let top = Math.min(anchor.y, pcy, pitch.y) - padding;
-  let right = Math.max(anchor.x, pcx, pitch.x + pitch.width) + padding;
-  let bottom = Math.max(anchor.y, pcy, pitch.y + pitch.height) + padding;
+  const left = Math.min(anchor.x, pcx, pitch.x) - padding;
+  const top = Math.min(anchor.y, pcy, pitch.y) - padding;
+  const right = Math.max(anchor.x, pcx, pitch.x + pitch.width) + padding;
+  const bottom = Math.max(anchor.y, pcy, pitch.y + pitch.height) + padding;
 
-  let w = right - left;
-  let h = bottom - top;
-  const size = Math.max(w, h, 160);
+  const w = right - left;
+  const h = bottom - top;
+  const size = Math.min(maxSize, Math.max(minSize, w, h));
 
   let cropX = (left + right) / 2 - size / 2;
   let cropY = (top + bottom) / 2 - size / 2;
