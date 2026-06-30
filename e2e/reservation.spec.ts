@@ -38,8 +38,8 @@ test.describe("Reservation checkout", () => {
     });
 
     await expect(page.getByRole("heading", { name: "Your details" })).toBeVisible();
-    await page.getByPlaceholder("John Smith").fill("E2E Tester");
-    await page.getByPlaceholder("+44 7700 900123").fill("+15555550100");
+    await page.getByLabel("Full name").fill("E2E Tester");
+    await page.getByLabel(/Mobile phone/i).fill("+15555550100");
     await page.getByRole("button", { name: "Continue" }).click();
 
     await expect(page.getByRole("heading", { name: "Payment method" })).toBeVisible();

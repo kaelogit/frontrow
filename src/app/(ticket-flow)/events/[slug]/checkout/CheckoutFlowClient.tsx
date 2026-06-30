@@ -16,6 +16,7 @@ import { CheckoutTrustLinks } from "@/components/trust/CheckoutTrustLinks";
 import { Web3Provider } from "@/components/crypto/Web3Provider";
 import { trackCheckoutStart, trackReservationSubmit } from "@/lib/analytics/funnel";
 import { buildEventBreadcrumbs } from "@/lib/navigation/breadcrumbs";
+import { CRYPTO_CHECKOUT_MINUTES } from "@/lib/payments/types";
 import { getEventTicketHref } from "@/lib/events/event-scarcity";
 import {
   clearCheckoutSession,
@@ -47,6 +48,7 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
   const [cryptoOrder, setCryptoOrder] = useState<{
     reference: string;
     total: number;
+    expiresAt: string;
   } | null>(null);
   const [cryptoPaymentsLive, setCryptoPaymentsLive] = useState<boolean | null>(null);
 
@@ -159,6 +161,9 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
         setCryptoOrder({
           reference: data.reference as string,
           total: data.total as number,
+          expiresAt: new Date(
+            Date.now() + CRYPTO_CHECKOUT_MINUTES * 60 * 1000
+          ).toISOString(),
         });
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
@@ -330,6 +335,7 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
               <CryptoCheckoutPanel
                 reference={cryptoOrder.reference}
                 totalUsd={cryptoOrder.total}
+                expiresAt={cryptoOrder.expiresAt}
                 onPaid={() => {
                   clearCheckoutSession();
                   router.push(`/order/${cryptoOrder.reference}/confirmation`);

@@ -8,6 +8,11 @@ import {
 import { buildReservationAdminEmail } from "@/emails/reservation-admin";
 import { buildReservationCustomerEmail } from "@/emails/reservation-customer";
 import { buildTicketConfirmationEmail } from "@/emails/ticket-confirmation";
+import {
+  buildPaymentOfferCustomerEmail,
+  buildPaymentSubmittedAdminEmail,
+  buildPaymentSubmittedCustomerEmail,
+} from "@/emails/payment-offer";
 import type { EmailOrderItem } from "@/emails/types";
 
 interface ReservationEmailParams {
@@ -127,6 +132,82 @@ export function ticketEmailFromOrder(order: AdminOrder) {
     currency: order.currency,
     order,
   };
+}
+
+export async function sendPaymentOfferEmail(params: {
+  customerName: string;
+  customerEmail: string;
+  orderReference: string;
+  amount: number;
+  currency: string;
+  methodLabel: string;
+  token: string;
+  expiryMinutes: number;
+}) {
+  const fromEmail = process.env.FROM_EMAIL ?? "tickets@frontrowly.com";
+  const resendKey = process.env.RESEND_API_KEY;
+  const content = buildPaymentOfferCustomerEmail(params);
+
+  if (!resendKey) {
+    console.log("[Email] Payment offer:\n", content.text);
+    return;
+  }
+
+  const { Resend } = await import("resend");
+  const resend = new Resend(resendKey);
+  await resend.emails.send({
+    from: fromEmail,
+    to: params.customerEmail,
+    subject: content.subject,
+    text: content.text,
+    html: content.html,
+  });
+}
+
+export async function sendPaymentSubmittedEmails(params: {
+  customerName: string;
+  customerEmail: string;
+  orderReference: string;
+  methodLabel: string;
+  amount: number;
+  currency: string;
+  receiptUrl: string;
+  customerNote?: string | null;
+}) {
+  const adminEmail = process.env.ADMIN_EMAIL ?? "support@frontrowly.com";
+  const fromEmail = process.env.FROM_EMAIL ?? "tickets@frontrowly.com";
+  const resendKey = process.env.RESEND_API_KEY;
+
+  const customer = buildPaymentSubmittedCustomerEmail({
+    customerName: params.customerName,
+    orderReference: params.orderReference,
+  });
+  const admin = buildPaymentSubmittedAdminEmail(params);
+
+  if (!resendKey) {
+    console.log("[Email] Payment submitted — customer:\n", customer.text);
+    console.log("[Email] Payment submitted — admin:\n", admin.text);
+    return;
+  }
+
+  const { Resend } = await import("resend");
+  const resend = new Resend(resendKey);
+  await Promise.all([
+    resend.emails.send({
+      from: fromEmail,
+      to: params.customerEmail,
+      subject: customer.subject,
+      text: customer.text,
+      html: customer.html,
+    }),
+    resend.emails.send({
+      from: fromEmail,
+      to: adminEmail,
+      subject: admin.subject,
+      text: admin.text,
+      html: admin.html,
+    }),
+  ]);
 }
 
 interface ContactEmailParams {

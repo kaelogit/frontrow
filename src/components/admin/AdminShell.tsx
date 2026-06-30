@@ -11,6 +11,7 @@ import {
   Menu,
   Settings,
   ShoppingBag,
+  CreditCard,
   X,
 } from "lucide-react";
 import { AdminSignOutButton } from "@/components/admin/AdminSignOutButton";
@@ -21,6 +22,7 @@ const nav = [
   { href: "/admin/events", label: "Events", icon: Calendar },
   { href: "/admin/venues", label: "Venues", icon: MapPin },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
+  { href: "/admin/payment-methods", label: "Payments", icon: CreditCard },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

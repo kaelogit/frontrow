@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getAdminOrderByReference } from "@/lib/orders/admin-queries";
 import { OrderStatusBadge } from "@/components/admin/OrderStatusBadge";
 import { OrderActions } from "@/components/admin/OrderActions";
+import { PaymentOfferManager } from "@/components/admin/PaymentOfferManager";
 import { formatEventDate, formatPrice } from "@/lib/utils";
 
 export default async function AdminOrderDetailPage({
@@ -120,6 +121,14 @@ export default async function AdminOrderDetailPage({
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="mt-6 rounded-xl border border-card-border bg-card p-5">
+        <PaymentOfferManager
+          reference={order.reference}
+          defaultAmount={order.total_amount}
+          currency={order.currency}
+        />
       </section>
 
       <section className="mt-6 rounded-xl border border-card-border bg-card p-5">

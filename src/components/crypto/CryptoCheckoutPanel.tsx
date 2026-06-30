@@ -32,6 +32,10 @@ import type { CryptoQuote } from "@/lib/crypto/prices";
 
 import { formatPrice } from "@/lib/utils";
 
+import { PaymentCountdown } from "@/components/payments/PaymentCountdown";
+
+import { CRYPTO_CHECKOUT_MINUTES } from "@/lib/payments/types";
+
 import { EvmCryptoPay } from "@/components/crypto/EvmCryptoPay";
 
 import { SolanaCryptoPay } from "@/components/crypto/SolanaCryptoPay";
@@ -53,6 +57,10 @@ interface CryptoCheckoutPanelProps {
   totalUsd: number;
 
   onPaid: () => void;
+
+  expiresAt?: string;
+
+  lockedPaymentId?: CryptoPaymentId;
 
 }
 
@@ -106,13 +114,25 @@ export function CryptoCheckoutPanel({
 
   onPaid,
 
+  expiresAt: expiresAtProp,
+
+  lockedPaymentId,
+
 }: CryptoCheckoutPanelProps) {
 
   const [status, setStatus] = useState<CryptoStatusResponse | null>(null);
 
-  const [phase, setPhase] = useState<"select" | "pay">("select");
+  const [phase, setPhase] = useState<"select" | "pay">(lockedPaymentId ? "pay" : "select");
 
-  const [paymentId, setPaymentId] = useState<CryptoPaymentId | null>(null);
+  const [paymentId, setPaymentId] = useState<CryptoPaymentId | null>(lockedPaymentId ?? null);
+
+  const [sessionExpired, setSessionExpired] = useState(false);
+
+  const expiresAt =
+
+    expiresAtProp ??
+
+    new Date(Date.now() + CRYPTO_CHECKOUT_MINUTES * 60 * 1000).toISOString();
 
   const [currencyOpen, setCurrencyOpen] = useState(false);
 
@@ -140,7 +160,15 @@ export function CryptoCheckoutPanel({
 
           setStatus(data);
 
-          if (data.options[0]) setPaymentId(data.options[0].id);
+          if (lockedPaymentId) {
+
+            setPaymentId(lockedPaymentId);
+
+          } else if (data.options[0]) {
+
+            setPaymentId(data.options[0].id);
+
+          }
 
         }
 
@@ -158,7 +186,7 @@ export function CryptoCheckoutPanel({
 
     };
 
-  }, []);
+  }, [lockedPaymentId]);
 
 
 
@@ -279,6 +307,24 @@ export function CryptoCheckoutPanel({
 
 
 
+  if (sessionExpired) {
+
+    return (
+
+      <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-6 text-center text-sm text-red-800">
+
+        <p className="font-semibold">Payment window expired</p>
+
+        <p className="mt-2">Start checkout again to get a new quote.</p>
+
+      </div>
+
+    );
+
+  }
+
+
+
   if (!status) {
 
     return (
@@ -321,6 +367,7 @@ export function CryptoCheckoutPanel({
 
         <div className="mx-auto max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
 
+          {!lockedPaymentId ? (
           <button
 
             type="button"
@@ -336,6 +383,19 @@ export function CryptoCheckoutPanel({
             Change currency
 
           </button>
+          ) : null}
+
+
+
+          <PaymentCountdown
+
+            expiresAt={expiresAt}
+
+            onExpired={() => setSessionExpired(true)}
+
+            className="mb-4 text-center"
+
+          />
 
 
 
@@ -458,6 +518,18 @@ export function CryptoCheckoutPanel({
           </button>
 
         </div>
+
+
+
+        <PaymentCountdown
+
+          expiresAt={expiresAt}
+
+          onExpired={() => setSessionExpired(true)}
+
+          className="mb-4 text-center"
+
+        />
 
 
 

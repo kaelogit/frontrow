@@ -23,7 +23,8 @@ export default async function AdminSettingsPage() {
         </p>
         <ul className="list-inside list-disc space-y-1 text-zinc-400">
           <li>
-            <code>ADMIN_EMAILS</code> — comma-separated admin sign-in emails
+            <code>ADMIN_EMAILS</code> — comma-separated emails allowed to use{" "}
+            <code>/admin/login</code> (must match a Supabase Auth user)
           </li>
           <li>
             <code>RESEND_API_KEY</code> — reservation and ticket emails

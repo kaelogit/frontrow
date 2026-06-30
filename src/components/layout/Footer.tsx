@@ -177,27 +177,7 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Payment + app */}
-        <div className="mt-12 flex flex-col gap-6 border-t border-slate-200 pt-8 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Payment methods
-            </p>
-            <div className="mt-3">
-              <PaymentIcons />
-            </div>
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Mobile app
-            </p>
-            <div className="mt-3">
-              <AppDownloadPlaceholder />
-            </div>
-          </div>
-        </div>
-
-        <p className="mt-8 text-center text-xs text-slate-500">
+        <p className="mt-12 border-t border-slate-200 pt-8 text-center text-xs text-slate-500">
           © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
         </p>
       </div>

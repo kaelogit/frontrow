@@ -8,8 +8,8 @@ import {
 } from "@/lib/stadium/generic-bowl-layout";
 import { PitchMarkings } from "@/components/stadium/PitchMarkings";
 import {
+  buildApproximateViewCone,
   buildViewCone,
-  cropViewBoxAroundSection,
   viewConePath,
 } from "@/lib/stadium/section-view-angle";
 import { roundSvgPath } from "@/lib/stadium/svg-coords";
@@ -42,16 +42,21 @@ function resolveAngleViewGeometry(
     };
   }
 
+  const pool = sectionPool.length ? sectionPool : [sectionNumber];
+  const geometry = buildPreviewSectionGeometry(pool);
+
+  if (!geometry.some((g) => g.number === sectionNumber)) {
+    geometry.push(...buildPreviewSectionGeometry([sectionNumber]));
+  }
+
   return {
-    geometry: buildPreviewSectionGeometry(
-      sectionPool.length ? sectionPool : [sectionNumber]
-    ),
+    geometry,
     pitch: GENERIC_BOWL_PITCH,
     viewBox: GENERIC_BOWL_VIEWBOX,
   };
 }
 
-/** Listing-card thumbnail — isometric angle view with section wedge + view cone. */
+/** Listing-card thumbnail — full-bowl angle view with view cone + section dot. */
 export function MiniMap({
   mapSlug,
   sectionNumber,
@@ -77,13 +82,15 @@ export function MiniMap({
     allSections
   );
 
-  const targetSection =
-    geometry.find((g) => g.number === sectionNumber) ??
-    buildPreviewSectionGeometry([sectionNumber])[0];
+  const targetSection = geometry.find((g) => g.number === sectionNumber);
 
-  const cone = buildViewCone(targetSection, pitch, 0.38);
-  const anchor = { x: targetSection.labelX, y: targetSection.labelY };
-  const croppedViewBox = cropViewBoxAroundSection(anchor, pitch, viewBox, 90);
+  const cone = targetSection
+    ? buildViewCone(targetSection, pitch)
+    : buildApproximateViewCone(sectionNumber, pitch);
+
+  const anchor = targetSection
+    ? { x: targetSection.labelX, y: targetSection.labelY }
+    : { x: cone.sx, y: cone.sy };
 
   return (
     <div
@@ -91,10 +98,10 @@ export function MiniMap({
         "relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100",
         className
       )}
-      aria-label={`Section ${sectionNumber} on stadium map`}
+      aria-label={`View angle for section ${sectionNumber}`}
     >
       <svg
-        viewBox={croppedViewBox}
+        viewBox={viewBox}
         className="h-full w-full"
         preserveAspectRatio="xMidYMid meet"
         role="img"
@@ -107,8 +114,8 @@ export function MiniMap({
             d={roundSvgPath(sec.path)}
             fill={sec.number === sectionNumber ? "transparent" : "#e2e8f0"}
             stroke="#cbd5e1"
-            strokeWidth="0.75"
-            opacity={sec.number === sectionNumber ? 0 : 0.9}
+            strokeWidth="0.5"
+            opacity={sec.number === sectionNumber ? 0 : 0.85}
           />
         ))}
 
@@ -117,9 +124,7 @@ export function MiniMap({
           y={pitch.y}
           width={pitch.width}
           height={pitch.height}
-          fill="#4ade80"
-          stroke="#16a34a"
-          strokeWidth="2"
+          fill="#15803d"
           rx="4"
         />
         <PitchMarkings
@@ -127,33 +132,24 @@ export function MiniMap({
           y={pitch.y}
           width={pitch.width}
           height={pitch.height}
-          strokeWidth={1.5}
+          strokeWidth={1}
         />
 
         <path
           d={roundSvgPath(viewConePath(cone))}
-          fill="rgba(14, 165, 233, 0.55)"
-          stroke="#0369a1"
-          strokeWidth="2.5"
+          fill="rgba(14, 165, 233, 0.4)"
+          stroke="rgba(2, 132, 199, 0.75)"
+          strokeWidth="1.5"
         />
 
-        {targetSection.path ? (
-          <path
-            d={roundSvgPath(targetSection.path)}
-            fill="#0284c7"
-            stroke="#0c4a6e"
-            strokeWidth="3"
-          />
-        ) : (
-          <circle
-            cx={anchor.x}
-            cy={anchor.y}
-            r={18}
-            fill="#0284c7"
-            stroke="#0c4a6e"
-            strokeWidth="3"
-          />
-        )}
+        <circle
+          cx={anchor.x}
+          cy={anchor.y}
+          r={9}
+          fill="#0284c7"
+          stroke="#0c4a6e"
+          strokeWidth="2"
+        />
       </svg>
 
       <span className="absolute bottom-0.5 right-0.5 rounded bg-white/90 px-1 text-[9px] font-bold text-sky-700 shadow-sm">

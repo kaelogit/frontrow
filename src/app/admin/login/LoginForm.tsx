@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 interface LoginFormProps {
@@ -10,14 +11,15 @@ interface LoginFormProps {
 }
 
 const ERROR_MESSAGES: Record<string, string> = {
-  auth_failed: "Sign-in link expired or invalid. Request a new one.",
+  auth_failed: "Sign-in failed. Check your email and password.",
   not_admin: "This email is not authorized for admin access.",
   missing_code: "Invalid sign-in response. Try again.",
 };
 
 export function LoginForm({ error, nextPath }: LoginFormProps) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -28,11 +30,9 @@ export function LoginForm({ error, nextPath }: LoginFormProps) {
 
     try {
       const supabase = createClient();
-      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
-
-      const { error: signInError } = await supabase.auth.signInWithOtp({
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
-        options: { emailRedirectTo: redirectTo },
+        password,
       });
 
       if (signInError) {
@@ -40,7 +40,17 @@ export function LoginForm({ error, nextPath }: LoginFormProps) {
         return;
       }
 
-      setSent(true);
+      const verify = await fetch("/api/admin/verify-session");
+      const result = (await verify.json()) as { authorized?: boolean };
+
+      if (!result.authorized) {
+        await supabase.auth.signOut();
+        setLocalError(ERROR_MESSAGES.not_admin);
+        return;
+      }
+
+      router.push(nextPath);
+      router.refresh();
     } catch {
       setLocalError("Something went wrong. Try again.");
     } finally {
@@ -58,46 +68,55 @@ export function LoginForm({ error, nextPath }: LoginFormProps) {
       </Link>
       <h1 className="mt-8 text-2xl font-bold">Admin sign in</h1>
       <p className="mt-2 text-sm text-zinc-500">
-        Magic link sent to your authorized admin email.
+        Sign in with your Supabase admin account (email and password).
       </p>
 
-      {sent ? (
-        <div className="mt-8 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-200">
-          Check your inbox for <strong>{email}</strong>. Click the link to open
-          the admin panel.
+      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-zinc-400">
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            required
+            autoComplete="username"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-card-border bg-card px-3 py-2 text-sm outline-none focus:border-accent"
+            placeholder="you@frontrowly.com"
+          />
         </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-zinc-400">
-              Admin email
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-card-border bg-card px-3 py-2 text-sm outline-none focus:border-accent"
-              placeholder="admin@frontrowly.com"
-            />
-          </div>
 
-          {displayError && (
-            <p className="text-sm text-red-400" role="alert">
-              {displayError}
-            </p>
-          )}
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium text-zinc-400">
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            required
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-card-border bg-card px-3 py-2 text-sm outline-none focus:border-accent"
+          />
+        </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-accent py-2.5 text-sm font-semibold text-black disabled:opacity-60"
-          >
-            {loading ? "Sending…" : "Send magic link"}
-          </button>
-        </form>
-      )}
+        {displayError && (
+          <p className="text-sm text-red-400" role="alert">
+            {displayError}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-lg bg-accent py-2.5 text-sm font-semibold text-black disabled:opacity-60"
+        >
+          {loading ? "Signing in…" : "Sign in"}
+        </button>
+      </form>
 
       <Link href="/" className="mt-8 inline-block text-xs text-zinc-600 hover:text-zinc-400">
         ← Back to site
