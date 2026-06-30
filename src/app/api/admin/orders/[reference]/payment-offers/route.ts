@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { CRYPTO_PAYMENT_IDS, type CryptoPaymentId } from "@/lib/crypto/payment-options";
 import { getAdminSession } from "@/lib/auth/session";
 import { sendPaymentOfferEmail } from "@/lib/email";
 import { getDemoOrder } from "@/lib/orders/demo-store";
@@ -22,7 +21,6 @@ const createSchema = z.discriminatedUnion("kind", [
   }),
   z.object({
     kind: z.literal("crypto"),
-    crypto_payment_id: z.enum(CRYPTO_PAYMENT_IDS as unknown as [CryptoPaymentId, ...CryptoPaymentId[]]),
     amount: z.number().positive(),
     expiry_minutes: z.number().int().positive(),
     send_email: z.boolean().optional(),
@@ -67,44 +65,60 @@ export async function POST(
     return NextResponse.json({ error: "Invalid data" }, { status: 400 });
   }
 
+  try {
+    let offer;
+    if (parsed.data.kind === "crypto") {
+      offer = await createCryptoOffer({
+        order_id: order.id,
+        order_reference: order.reference,
+        amount: parsed.data.amount,
+        currency: order.currency,
+        expiry_minutes: parsed.data.expiry_minutes,
+        created_by: session.email,
+      });
+    } else {
+      offer = await createOfferFromCredential({
+        order_id: order.id,
+        order_reference: order.reference,
+        credential_id: parsed.data.credential_id,
+        amount: parsed.data.amount,
+        currency: order.currency,
+        expiry_minutes: parsed.data.expiry_minutes,
+        created_by: session.email,
+      });
+    }
 
-  let offer;
-  if (parsed.data.kind === "crypto") {
-    offer = await createCryptoOffer({
-      order_id: order.id,
-      order_reference: order.reference,
-      amount: parsed.data.amount,
-      currency: order.currency,
-      crypto_payment_id: parsed.data.crypto_payment_id,
-      expiry_minutes: parsed.data.expiry_minutes,
-      created_by: session.email,
+    if (parsed.data.send_email) {
+      await sendPaymentOfferEmail({
+        customerName: order.customer_name,
+        customerEmail: order.customer_email,
+        orderReference: order.reference,
+        amount: offer.amount,
+        currency: offer.currency,
+        methodLabel: offer.method_label,
+        token: offer.token,
+        expiryMinutes: offer.expiry_minutes,
+      });
+    }
+
+    return NextResponse.json({
+      offer: { ...offer, url: paymentOfferUrl(offer.token) },
     });
-  } else {
-    offer = await createOfferFromCredential({
-      order_id: order.id,
-      order_reference: order.reference,
-      credential_id: parsed.data.credential_id,
-      amount: parsed.data.amount,
-      currency: order.currency,
-      expiry_minutes: parsed.data.expiry_minutes,
-      created_by: session.email,
-    });
+  } catch (err) {
+    console.error("payment-offer create:", err);
+    const message = err instanceof Error ? err.message : "Failed to create link";
+    if (message.includes("payment_offers") || message.includes("does not exist")) {
+      return NextResponse.json(
+        {
+          error:
+            "Payment links table not found. Run Supabase migrations 014 and 015, then try again.",
+        },
+        { status: 500 }
+      );
+    }
+    if (message.includes("Payment credential not found")) {
+      return NextResponse.json({ error: message }, { status: 400 });
+    }
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  if (parsed.data.send_email) {
-    await sendPaymentOfferEmail({
-      customerName: order.customer_name,
-      customerEmail: order.customer_email,
-      orderReference: order.reference,
-      amount: offer.amount,
-      currency: offer.currency,
-      methodLabel: offer.method_label,
-      token: offer.token,
-      expiryMinutes: offer.expiry_minutes,
-    });
-  }
-
-  return NextResponse.json({
-    offer: { ...offer, url: paymentOfferUrl(offer.token) },
-  });
 }

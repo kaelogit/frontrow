@@ -5,36 +5,38 @@
 import { useEffect, useState } from "react";
 
 import { Loader2 } from "lucide-react";
-
-import { getTronReceiveAddress } from "@/lib/crypto/config";
+import { useCryptoReceiveAddress } from "@/lib/crypto/use-receive-address";
 
 import { buildTronPaymentUri } from "@/lib/crypto/payment-uri";
 
 import type { CryptoPaymentId } from "@/lib/crypto/payment-options";
 
 import type { CryptoQuote } from "@/lib/crypto/prices";
+import { postCryptoConfirmation } from "@/lib/crypto/post-confirmation";
 
 import { CryptoReceiveAddressCard } from "@/components/crypto/CryptoReceiveAddressCard";
 
 
 
 interface TronCryptoPayProps {
-
   reference: string;
-
+  offerToken?: string;
   paymentId: Extract<CryptoPaymentId, "trx-tron" | "usdt-tron">;
-
   totalUsd: number;
-
   onPaid: () => void;
-
 }
 
 
 
-export function TronCryptoPay({ reference, paymentId, totalUsd, onPaid }: TronCryptoPayProps) {
-
-  const address = getTronReceiveAddress();
+export function TronCryptoPay({
+  reference,
+  offerToken,
+  paymentId,
+  totalUsd,
+  onPaid,
+}: TronCryptoPayProps) {
+  const { address, loading: addressLoading, error: addressError } =
+    useCryptoReceiveAddress(paymentId);
 
   const [quote, setQuote] = useState<CryptoQuote | null>(null);
 
@@ -47,8 +49,6 @@ export function TronCryptoPay({ reference, paymentId, totalUsd, onPaid }: TronCr
 
 
   const symbol = paymentId === "usdt-tron" ? "USDT" : "TRX";
-
-
 
   useEffect(() => {
 
@@ -86,9 +86,21 @@ export function TronCryptoPay({ reference, paymentId, totalUsd, onPaid }: TronCr
 
 
 
-  if (!address) return null;
+  if (addressLoading) {
+    return (
+      <div className="flex justify-center py-8">
+        <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+      </div>
+    );
+  }
 
-
+  if (!address) {
+    return (
+      <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        {addressError ?? `${symbol} receive address is not configured.`}
+      </p>
+    );
+  }
 
   const verify = async () => {
 
@@ -106,27 +118,11 @@ export function TronCryptoPay({ reference, paymentId, totalUsd, onPaid }: TronCr
 
     try {
 
-      const res = await fetch("/api/checkout/crypto/confirm", {
-
-        method: "POST",
-
-        headers: { "Content-Type": "application/json" },
-
-        body: JSON.stringify({
-
-          reference,
-
-          paymentId,
-
-          txid: txid.trim(),
-
-        }),
-
-      });
-
-      const data = (await res.json()) as { error?: string };
-
-      if (!res.ok) throw new Error(data.error ?? "Verification failed");
+      await postCryptoConfirmation(
+        reference,
+        { paymentId, txid: txid.trim() },
+        offerToken
+      );
 
       onPaid();
 
@@ -153,8 +149,17 @@ export function TronCryptoPay({ reference, paymentId, totalUsd, onPaid }: TronCr
 
 
   return (
-
     <div className="space-y-4">
+      {quote && (
+        <div className="rounded-xl border border-sky-100 bg-sky-50 px-4 py-3 text-center">
+          <p className="text-xs font-medium uppercase tracking-wide text-sky-700">
+            Send exactly
+          </p>
+          <p className="mt-1 text-2xl font-bold text-slate-900">
+            {quote.amount} {symbol}
+          </p>
+        </div>
+      )}
 
       <CryptoReceiveAddressCard
 

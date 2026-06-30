@@ -1,9 +1,12 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { CheckCircle2, Loader2, Upload } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Loader2, Upload } from "lucide-react";
 import { PaymentCountdown } from "@/components/payments/PaymentCountdown";
-import { PaymentOfferCrypto } from "@/components/payments/PaymentOfferCrypto";
+import {
+  PaymentOfferCrypto,
+  PaymentOfferCryptoSuccess,
+} from "@/components/payments/PaymentOfferCrypto";
 import { SUPPORT_EMAIL, expiredMessage } from "@/lib/payments/instructions";
 import type { PaymentOfferPublicView } from "@/lib/payments/types";
 import { formatExpiryDuration } from "@/lib/payments/types";
@@ -22,6 +25,9 @@ export function PaymentOfferClient({ initial }: PaymentOfferClientProps) {
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(view.status === "submitted");
+  const [credentialStep, setCredentialStep] = useState<"instructions" | "receipt">(
+    "instructions"
+  );
 
   const handleExpired = useCallback(() => setExpired(true), []);
 
@@ -125,9 +131,108 @@ export function PaymentOfferClient({ initial }: PaymentOfferClientProps) {
     );
   }
 
-  if (view.methodType === "crypto" && view.cryptoPaymentId) {
+  if (view.methodType === "crypto") {
+    if (submitted) {
+      return <PaymentOfferCryptoSuccess orderReference={view.orderReference} />;
+    }
     return (
-      <PaymentOfferCrypto view={view} onExpired={handleExpired} expired={expired} />
+      <PaymentOfferCrypto
+        view={view}
+        onExpired={handleExpired}
+        expired={expired}
+        onPaid={() => setSubmitted(true)}
+      />
+    );
+  }
+
+  if (credentialStep === "receipt") {
+    return (
+      <div className="mx-auto max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <button
+          type="button"
+          onClick={() => {
+            setError("");
+            setCredentialStep("instructions");
+          }}
+          className="inline-flex items-center gap-2 text-sm font-medium text-sky-600 hover:text-sky-700"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to payment details
+        </button>
+
+        <h1 className="mt-4 text-2xl font-bold text-slate-900">Upload proof of payment</h1>
+        <p className="mt-2 text-sm text-slate-600">
+          Send {formatPrice(view.amount, view.currency)} via {view.methodLabel}, then upload a
+          screenshot or receipt so we can verify your payment.
+        </p>
+        <p className="mt-1 font-mono text-xs text-slate-500">{view.orderReference}</p>
+
+        {view.expiresAt ? (
+          <PaymentCountdown
+            expiresAt={view.expiresAt}
+            onExpired={handleExpired}
+            variant="badge"
+            className="mt-4"
+          />
+        ) : null}
+
+        <div className="mt-8 space-y-4">
+          <label className="block">
+            <span className="text-sm font-medium text-slate-700">
+              Receipt or screenshot <span className="text-red-600">*</span>
+            </span>
+            <p className="mt-1 text-xs text-slate-500">
+              Required — photo or PDF from your bank app, Cash App, Apple Pay, etc.
+            </p>
+            <div className="mt-3">
+              <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center transition hover:border-sky-300 hover:bg-sky-50/50">
+                <Upload className="h-8 w-8 text-slate-400" />
+                <span className="text-sm font-medium text-slate-700">
+                  {receipt ? receipt.name : "Tap to choose file"}
+                </span>
+                <span className="text-xs text-slate-400">PNG, JPG, or PDF · max 10 MB</span>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  className="hidden"
+                  onChange={(e) => {
+                    setReceipt(e.target.files?.[0] ?? null);
+                    setError("");
+                  }}
+                />
+              </label>
+            </div>
+          </label>
+
+          <label className="block">
+            <span className="text-sm font-medium text-slate-700">Note (optional)</span>
+            <input
+              type="text"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              placeholder="Reference on your receipt"
+            />
+          </label>
+
+          {error ? <p className="text-sm text-red-600">{error}</p> : null}
+
+          <button
+            type="button"
+            disabled={loading || !receipt}
+            onClick={submit}
+            className="w-full rounded-xl bg-sky-600 py-3 text-sm font-semibold text-white disabled:opacity-50"
+          >
+            {loading ? (
+              <span className="inline-flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" /> Submitting…
+              </span>
+            ) : (
+              "Submit payment proof"
+            )}
+          </button>
+        </div>
+      </div>
     );
   }
 
@@ -144,6 +249,7 @@ export function PaymentOfferClient({ initial }: PaymentOfferClientProps) {
         <PaymentCountdown
           expiresAt={view.expiresAt}
           onExpired={handleExpired}
+          variant="badge"
           className="mt-4"
         />
       ) : null}
@@ -159,51 +265,23 @@ export function PaymentOfferClient({ initial }: PaymentOfferClientProps) {
         ))}
       </dl>
 
-      <div className="mt-8 space-y-4 border-t border-slate-100 pt-6">
-        <label className="block">
-          <span className="text-sm font-medium text-slate-700">Receipt or screenshot</span>
-          <div className="mt-2 flex items-center gap-3">
-            <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-              <Upload className="h-4 w-4" />
-              {receipt ? receipt.name : "Choose file"}
-              <input
-                type="file"
-                accept="image/*,application/pdf"
-                className="hidden"
-                onChange={(e) => setReceipt(e.target.files?.[0] ?? null)}
-              />
-            </label>
-          </div>
-        </label>
+      <p className="mt-6 text-sm text-slate-600">
+        Send the amount above using these details. On the next step you&apos;ll upload proof of
+        payment — that&apos;s required to complete your order.
+      </p>
 
-        <label className="block">
-          <span className="text-sm font-medium text-slate-700">Note (optional)</span>
-          <input
-            type="text"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-            placeholder="Reference on your receipt"
-          />
-        </label>
+      {error ? <p className="mt-4 text-sm text-red-600">{error}</p> : null}
 
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
-
-        <button
-          type="button"
-          disabled={loading || !receipt}
-          onClick={submit}
-          className="w-full rounded-xl bg-sky-600 py-3 text-sm font-semibold text-white disabled:opacity-50"
-        >
-          {loading ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" /> Submitting…
-            </span>
-          ) : (
-            "I've sent payment"
-          )}
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => {
+          setError("");
+          setCredentialStep("receipt");
+        }}
+        className="mt-6 w-full rounded-xl bg-sky-600 py-3 text-sm font-semibold text-white hover:bg-sky-700"
+      >
+        I&apos;ve sent payment →
+      </button>
     </div>
   );
 }

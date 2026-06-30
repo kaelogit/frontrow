@@ -5,8 +5,7 @@
 import { useEffect, useState } from "react";
 
 import { Loader2 } from "lucide-react";
-
-import { getReceiveAddressForPayment } from "@/lib/crypto/config";
+import { useCryptoReceiveAddress } from "@/lib/crypto/use-receive-address";
 
 import {
 
@@ -21,6 +20,7 @@ import {
 import type { CryptoPaymentId } from "@/lib/crypto/payment-options";
 
 import type { CryptoQuote } from "@/lib/crypto/prices";
+import { postCryptoConfirmation } from "@/lib/crypto/post-confirmation";
 
 import { CryptoReceiveAddressCard } from "@/components/crypto/CryptoReceiveAddressCard";
 
@@ -91,22 +91,24 @@ const LABELS: Record<UtxoPaymentId, { title: string; symbol: string; hint: strin
 
 
 interface UtxoCryptoPayProps {
-
   reference: string;
-
+  offerToken?: string;
   paymentId: UtxoPaymentId;
-
   totalUsd: number;
-
   onPaid: () => void;
-
 }
 
 
 
-export function UtxoCryptoPay({ reference, paymentId, totalUsd, onPaid }: UtxoCryptoPayProps) {
-
-  const address = getReceiveAddressForPayment(paymentId);
+export function UtxoCryptoPay({
+  reference,
+  offerToken,
+  paymentId,
+  totalUsd,
+  onPaid,
+}: UtxoCryptoPayProps) {
+  const { address, loading: addressLoading, error: addressError } =
+    useCryptoReceiveAddress(paymentId);
 
   const [quote, setQuote] = useState<CryptoQuote | null>(null);
 
@@ -154,9 +156,22 @@ export function UtxoCryptoPay({ reference, paymentId, totalUsd, onPaid }: UtxoCr
 
 
 
-  if (!address || !isUtxoPaymentId(paymentId)) return null;
+  if (addressLoading) {
+    return (
+      <div className="flex justify-center py-8">
+        <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+      </div>
+    );
+  }
 
-
+  if (!address || !isUtxoPaymentId(paymentId)) {
+    const symbol = isUtxoPaymentId(paymentId) ? LABELS[paymentId].symbol : "Crypto";
+    return (
+      <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        {addressError ?? `${symbol} receive address is not configured.`}
+      </p>
+    );
+  }
 
   const meta = LABELS[paymentId];
 
@@ -178,27 +193,11 @@ export function UtxoCryptoPay({ reference, paymentId, totalUsd, onPaid }: UtxoCr
 
     try {
 
-      const res = await fetch("/api/checkout/crypto/confirm", {
-
-        method: "POST",
-
-        headers: { "Content-Type": "application/json" },
-
-        body: JSON.stringify({
-
-          reference,
-
-          paymentId,
-
-          txid: txid.trim(),
-
-        }),
-
-      });
-
-      const data = (await res.json()) as { error?: string };
-
-      if (!res.ok) throw new Error(data.error ?? "Verification failed");
+      await postCryptoConfirmation(
+        reference,
+        { paymentId, txid: txid.trim() },
+        offerToken
+      );
 
       onPaid();
 
@@ -221,8 +220,17 @@ export function UtxoCryptoPay({ reference, paymentId, totalUsd, onPaid }: UtxoCr
 
 
   return (
-
     <div className="space-y-4">
+      {quote && (
+        <div className="rounded-xl border border-sky-100 bg-sky-50 px-4 py-3 text-center">
+          <p className="text-xs font-medium uppercase tracking-wide text-sky-700">
+            Send exactly
+          </p>
+          <p className="mt-1 text-2xl font-bold text-slate-900">
+            {quote.amount} {meta.symbol}
+          </p>
+        </div>
+      )}
 
       <CryptoReceiveAddressCard
 

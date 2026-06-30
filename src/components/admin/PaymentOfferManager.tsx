@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Copy, Loader2, Pencil, X } from "lucide-react";
-import { CRYPTO_PAYMENT_OPTIONS, type CryptoPaymentId } from "@/lib/crypto/payment-options";
 import {
   EXPIRY_PRESETS,
   formatExpiryDuration,
@@ -46,12 +45,9 @@ export function PaymentOfferManager({
   const [offers, setOffers] = useState<OfferRow[]>([]);
   const [mode, setMode] = useState<"credential" | "crypto">("credential");
   const [credentialId, setCredentialId] = useState("");
-  const [cryptoId, setCryptoId] = useState<CryptoPaymentId>(
-    CRYPTO_PAYMENT_OPTIONS[0]?.id ?? "usdc-base"
-  );
   const [amount, setAmount] = useState(String(defaultAmount));
   const [expiryMinutes, setExpiryMinutes] = useState(14 * 60);
-  const [sendEmail, setSendEmail] = useState(true);
+  const [sendEmail, setSendEmail] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
@@ -84,7 +80,6 @@ export function PaymentOfferManager({
         mode === "crypto"
           ? {
               kind: "crypto",
-              crypto_payment_id: cryptoId,
               amount: Number(amount),
               expiry_minutes: expiryMinutes,
               send_email: sendEmail,
@@ -167,6 +162,10 @@ export function PaymentOfferManager({
     <div className="space-y-6">
       <div className="rounded-xl border border-card-border bg-card p-5">
         <h2 className="font-semibold">Payment link</h2>
+        <p className="mt-1 text-xs text-zinc-500">
+          After the customer picks a method (A–H), create one link for that method only.
+          Paste the link in your reply email — do not auto-send unless you check the box below.
+        </p>
 
         <div className="mt-4 flex flex-wrap gap-2">
           <button
@@ -204,20 +203,10 @@ export function PaymentOfferManager({
               </select>
             </label>
           ) : (
-            <label className="block sm:col-span-2">
-              <span className="text-xs text-zinc-500">Coin</span>
-              <select
-                value={cryptoId}
-                onChange={(e) => setCryptoId(e.target.value as CryptoPaymentId)}
-                className="mt-1 w-full rounded-lg border border-card-border bg-black/20 px-3 py-2 text-sm"
-              >
-                {CRYPTO_PAYMENT_OPTIONS.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <p className="sm:col-span-2 rounded-lg border border-card-border/50 bg-black/10 px-3 py-2 text-xs text-zinc-400">
+              Customer chooses BTC, ETH, USDC, etc. on the payment page. You only set amount
+              and timer.
+            </p>
           )}
 
           <label className="block">

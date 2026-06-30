@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Shield, Smartphone } from "lucide-react";
+import { Shield } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { SITE_NAME } from "@/lib/constants";
 import { WORLD_CUP_CITY_PAGES } from "@/lib/marketing/world-cup-cities";
@@ -32,53 +32,6 @@ const cityLinks = [...WORLD_CUP_CITY_PAGES]
     href: `/world-cup-2026/${city.slug}`,
     label: city.name.replace(" / New Jersey", " / NJ"),
   }));
-
-function PaymentIcons() {
-  const methods = [
-    { id: "visa", label: "Visa" },
-    { id: "mc", label: "Mastercard" },
-    { id: "amex", label: "Amex" },
-    { id: "apple", label: "Apple Pay" },
-    { id: "crypto", label: "Crypto" },
-  ] as const;
-
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      {methods.map((m) => (
-        <span
-          key={m.id}
-          className="inline-flex h-8 items-center rounded-md border border-slate-200 bg-white px-2.5 text-[10px] font-bold uppercase tracking-wide text-slate-600"
-          title={m.label}
-        >
-          {m.label}
-        </span>
-      ))}
-      <span className="text-xs text-slate-400">Card checkout coming soon</span>
-    </div>
-  );
-}
-
-function AppDownloadPlaceholder() {
-  return (
-    <div className="flex flex-wrap gap-2">
-      {["App Store", "Google Play"].map((store) => (
-        <span
-          key={store}
-          className="inline-flex items-center gap-2 rounded-lg border border-dashed border-slate-300 bg-white px-3 py-2 text-xs text-slate-500"
-          title={`${store} app — coming soon`}
-        >
-          <Smartphone className="h-4 w-4 shrink-0 text-slate-400" aria-hidden />
-          <span>
-            {store}
-            <span className="ml-1.5 text-[10px] font-medium uppercase text-slate-400">
-              Soon
-            </span>
-          </span>
-        </span>
-      ))}
-    </div>
-  );
-}
 
 export function Footer() {
   return (

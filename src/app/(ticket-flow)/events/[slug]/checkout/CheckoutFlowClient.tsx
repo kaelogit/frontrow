@@ -337,7 +337,8 @@ export function CheckoutFlowClient({ event }: CheckoutFlowClientProps) {
             <div className="rounded-xl border border-slate-200 bg-white p-6 sm:p-8">
               <h2 className="text-2xl font-bold text-slate-900">Complete crypto payment</h2>
               <p className="mt-2 text-sm text-slate-600">
-                Your order is on hold. Connect your wallet and send USDC to secure your seats.
+                Your order is on hold. Choose your coin, send the exact amount to our address,
+                then confirm.
               </p>
               <CryptoCheckoutPanel
                 reference={cryptoOrder.reference}

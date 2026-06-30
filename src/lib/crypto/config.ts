@@ -72,18 +72,19 @@ export function getCryptoAddressConfig(): CryptoAddressConfig {
   };
 }
 
-export function isCryptoPaymentsEnabled(): boolean {
+/** At least one receive address is configured (server env). */
+export function hasCryptoReceiveAddresses(): boolean {
   const addresses = getCryptoAddressConfig();
-  return Boolean(
-    getWalletConnectProjectId() &&
-      (addresses.evm ||
-        addresses.solana ||
-        addresses.bitcoin ||
-        addresses.litecoin ||
-        addresses.dogecoin ||
-        addresses.tron ||
-        addresses.ton)
-  );
+  return Object.values(addresses).some(Boolean);
+}
+
+/** Crypto checkout is available when receive addresses exist. WalletConnect is only needed for in-wallet EVM sends. */
+export function isCryptoPaymentsEnabled(): boolean {
+  return hasCryptoReceiveAddresses();
+}
+
+export function isWalletConnectConfigured(): boolean {
+  return Boolean(getWalletConnectProjectId());
 }
 
 export function getReceiveAddressForPayment(

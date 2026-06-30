@@ -1,23 +1,24 @@
 "use client";
 
-import { PaymentCountdown } from "@/components/payments/PaymentCountdown";
+import { CheckCircle2 } from "lucide-react";
 import { CryptoCheckoutPanel } from "@/components/crypto/CryptoCheckoutPanel";
 import { SUPPORT_EMAIL, expiredMessage } from "@/lib/payments/instructions";
 import type { PaymentOfferPublicView } from "@/lib/payments/types";
-import { formatPrice } from "@/lib/utils";
 
 interface PaymentOfferCryptoProps {
   view: PaymentOfferPublicView;
   expired: boolean;
   onExpired: () => void;
+  onPaid: () => void;
 }
 
 export function PaymentOfferCrypto({
   view,
   expired,
   onExpired,
+  onPaid,
 }: PaymentOfferCryptoProps) {
-  if (expired || !view.cryptoPaymentId || !view.expiresAt) {
+  if (expired || !view.expiresAt) {
     return (
       <div className="mx-auto max-w-lg rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
         <h1 className="text-xl font-bold text-slate-900">Link expired</h1>
@@ -33,24 +34,35 @@ export function PaymentOfferCrypto({
   }
 
   return (
-    <div className="mx-auto max-w-xl space-y-4">
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-sm text-slate-500">{view.eventTitle}</p>
-        <h1 className="text-xl font-bold text-slate-900">Crypto payment</h1>
-        <p className="font-mono text-sm text-slate-500">{view.orderReference}</p>
-        <p className="mt-3 text-2xl font-bold text-slate-900">
-          {formatPrice(view.amount, view.currency)}
-        </p>
-        <PaymentCountdown expiresAt={view.expiresAt} onExpired={onExpired} className="mt-3" />
-      </div>
+    <CryptoCheckoutPanel
+      mode="offer"
+      reference={view.orderReference}
+      offerToken={view.token}
+      totalUsd={view.amount}
+      currency={view.currency}
+      expiresAt={view.expiresAt}
+      onExpired={onExpired}
+      onPaid={onPaid}
+      header={{
+        eventTitle: view.eventTitle,
+        orderReference: view.orderReference,
+      }}
+    />
+  );
+}
 
-      <CryptoCheckoutPanel
-        reference={view.orderReference}
-        totalUsd={view.amount}
-        expiresAt={view.expiresAt}
-        lockedPaymentId={view.cryptoPaymentId}
-        onPaid={() => {}}
-      />
+export function PaymentOfferCryptoSuccess({ orderReference }: { orderReference: string }) {
+  return (
+    <div className="mx-auto max-w-lg rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+      <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-600" />
+      <h1 className="mt-4 text-xl font-bold text-slate-900">Payment submitted</h1>
+      <p className="mt-2 text-slate-600">
+        We&apos;re verifying your crypto payment for{" "}
+        <span className="font-mono text-sm">{orderReference}</span>.
+      </p>
+      <p className="mt-4 text-sm text-slate-500">
+        You&apos;ll receive a confirmation email once verified.
+      </p>
     </div>
   );
 }

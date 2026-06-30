@@ -261,7 +261,6 @@ export async function createCryptoOffer(input: {
   order_reference: string;
   amount: number;
   currency: string;
-  crypto_payment_id: CryptoPaymentId;
   expiry_minutes: number;
   created_by: string | null;
 }): Promise<PaymentOffer> {
@@ -274,7 +273,7 @@ export async function createCryptoOffer(input: {
     method_type: "crypto",
     method_label: "Crypto",
     instructions: {},
-    crypto_payment_id: input.crypto_payment_id,
+    crypto_payment_id: null,
     expiry_minutes: input.expiry_minutes,
     created_by: input.created_by,
   });

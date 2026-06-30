@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Clock } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface PaymentCountdownProps {
   expiresAt: string;
   onExpired?: () => void;
   className?: string;
+  variant?: "inline" | "badge";
 }
 
 function formatRemaining(ms: number): string {
@@ -22,6 +25,7 @@ export function PaymentCountdown({
   expiresAt,
   onExpired,
   className = "",
+  variant = "badge",
 }: PaymentCountdownProps) {
   const [remaining, setRemaining] = useState(
     () => new Date(expiresAt).getTime() - Date.now()
@@ -39,12 +43,34 @@ export function PaymentCountdown({
   }, [expiresAt, onExpired]);
 
   const expired = remaining <= 0;
+  const label = expired ? "Expired" : formatRemaining(remaining);
+
+  if (variant === "inline") {
+    return (
+      <p
+        className={cn(
+          "text-sm font-medium",
+          expired ? "text-red-600" : "text-amber-700",
+          className
+        )}
+      >
+        {expired ? "Expired" : `Time left: ${label}`}
+      </p>
+    );
+  }
 
   return (
-    <p
-      className={`text-sm font-medium ${expired ? "text-red-600" : "text-amber-700"} ${className}`}
+    <div
+      className={cn(
+        "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold tabular-nums",
+        expired
+          ? "bg-red-50 text-red-700 ring-1 ring-red-200"
+          : "bg-amber-50 text-amber-800 ring-1 ring-amber-200",
+        className
+      )}
     >
-      {expired ? "Expired" : `Time left: ${formatRemaining(remaining)}`}
-    </p>
+      <Clock className="h-4 w-4 shrink-0" aria-hidden />
+      <span>{expired ? "Time expired" : label}</span>
+    </div>
   );
 }

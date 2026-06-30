@@ -5,32 +5,34 @@
 import { useEffect, useState } from "react";
 
 import { Loader2 } from "lucide-react";
-
-import { getTonReceiveAddress } from "@/lib/crypto/config";
+import { useCryptoReceiveAddress } from "@/lib/crypto/use-receive-address";
 
 import { buildTonPaymentUri } from "@/lib/crypto/payment-uri";
 
 import type { CryptoQuote } from "@/lib/crypto/prices";
+import { postCryptoConfirmation } from "@/lib/crypto/post-confirmation";
 
 import { CryptoReceiveAddressCard } from "@/components/crypto/CryptoReceiveAddressCard";
 
 
 
 interface TonCryptoPayProps {
-
   reference: string;
-
+  offerToken?: string;
   totalUsd: number;
-
   onPaid: () => void;
-
 }
 
 
 
-export function TonCryptoPay({ reference, totalUsd, onPaid }: TonCryptoPayProps) {
-
-  const address = getTonReceiveAddress();
+export function TonCryptoPay({
+  reference,
+  offerToken,
+  totalUsd,
+  onPaid,
+}: TonCryptoPayProps) {
+  const { address, loading: addressLoading, error: addressError } =
+    useCryptoReceiveAddress("ton-toncoin");
 
   const [quote, setQuote] = useState<CryptoQuote | null>(null);
 
@@ -74,9 +76,21 @@ export function TonCryptoPay({ reference, totalUsd, onPaid }: TonCryptoPayProps)
 
 
 
-  if (!address) return null;
+  if (addressLoading) {
+    return (
+      <div className="flex justify-center py-8">
+        <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+      </div>
+    );
+  }
 
-
+  if (!address) {
+    return (
+      <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        {addressError ?? "TON receive address is not configured."}
+      </p>
+    );
+  }
 
   const verify = async () => {
 
@@ -94,27 +108,11 @@ export function TonCryptoPay({ reference, totalUsd, onPaid }: TonCryptoPayProps)
 
     try {
 
-      const res = await fetch("/api/checkout/crypto/confirm", {
-
-        method: "POST",
-
-        headers: { "Content-Type": "application/json" },
-
-        body: JSON.stringify({
-
-          reference,
-
-          paymentId: "ton-toncoin",
-
-          txid: txid.trim(),
-
-        }),
-
-      });
-
-      const data = (await res.json()) as { error?: string };
-
-      if (!res.ok) throw new Error(data.error ?? "Verification failed");
+      await postCryptoConfirmation(
+        reference,
+        { paymentId: "ton-toncoin", txid: txid.trim() },
+        offerToken
+      );
 
       onPaid();
 
