@@ -27,7 +27,7 @@ const SLUG_OVERRIDES = {
   98: "world-cup-qf-match-98",
   104: "world-cup-final-match-104",
   ...Object.fromEntries(
-    Array.from({ length: 9 }, (_, i) => [80 + i, `world-cup-match-${80 + i}`])
+    Array.from({ length: 25 }, (_, i) => [80 + i, `world-cup-match-${80 + i}`])
   ),
 };
 
@@ -426,15 +426,16 @@ const eventRows = fixtures.map((f) => {
   const slug = eventSlug(f);
   const venue = VENUES[f.stadium];
   const { date, time } = localKickoff(f);
-  const placeholder = isPlaceholderTeam(f.homeTeam);
+  const homePlaceholder = isPlaceholderTeam(f.homeTeam);
+  const awayPlaceholder = isPlaceholderTeam(f.awayTeam);
 
   return {
     slug,
     matchNumber: String(f.matchNumber),
-    homeSlug: placeholder ? null : teamSlug(f.homeTeam),
-    awaySlug: placeholder ? null : isPlaceholderTeam(f.awayTeam) ? null : teamSlug(f.awayTeam),
-    homeLabel: placeholder ? f.homeTeam : null,
-    awayLabel: isPlaceholderTeam(f.awayTeam) ? f.awayTeam : null,
+    homeSlug: homePlaceholder ? null : teamSlug(f.homeTeam),
+    awaySlug: awayPlaceholder ? null : teamSlug(f.awayTeam),
+    homeLabel: homePlaceholder ? f.homeTeam : null,
+    awayLabel: awayPlaceholder ? f.awayTeam : null,
     venueSlug: venue.slug,
     title: title(f),
     subtitle: subtitle(f),

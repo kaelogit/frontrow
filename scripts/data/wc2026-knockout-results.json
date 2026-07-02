@@ -1,0 +1,15 @@
+{
+  "description": "Round of 32 results through 1 July 2026 — used to resolve Round of 16 matchups.",
+  "results": {
+    "73": { "winner": "away", "note": "Canada 2-1 South Africa" },
+    "74": { "winner": "home", "note": "Germany 3-1 Paraguay" },
+    "75": { "winner": "home", "note": "Netherlands 2-0 Morocco" },
+    "76": { "winner": "home", "note": "Brazil 3-2 Japan" },
+    "77": { "winner": "home", "note": "France 2-0 Sweden" },
+    "78": { "winner": "home", "note": "Cote d'Ivoire 1-0 Norway" },
+    "79": { "winner": "home", "note": "Mexico 2-1 Ecuador" },
+    "80": { "winner": "home", "note": "England 2-0 Congo DR" },
+    "81": { "winner": "home", "note": "USA 3-1 Bosnia and Herzegovina" },
+    "82": { "winner": "home", "note": "Belgium 1-0 Senegal" }
+  }
+}
