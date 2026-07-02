@@ -269,9 +269,7 @@ export function UtxoCryptoPay({
         />
 
         <p className="mt-1.5 text-xs text-slate-400">
-
-          After sending, paste your transaction ID so we can confirm on-chain.
-
+          Optional fallback if auto-detect is slow — paste your transaction ID after sending.
         </p>
 
       </div>
@@ -292,7 +290,7 @@ export function UtxoCryptoPay({
 
         {phase === "verifying" && <Loader2 className="h-4 w-4 animate-spin" />}
 
-        I&apos;ve sent {meta.symbol} — verify payment
+        I&apos;ve sent {meta.symbol} — verify manually
 
       </button>
 

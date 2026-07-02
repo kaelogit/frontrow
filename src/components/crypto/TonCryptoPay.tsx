@@ -170,29 +170,21 @@ export function TonCryptoPay({
 
         />
 
+        <p className="mt-1.5 text-xs text-slate-400">
+          Optional fallback if auto-detect is slow.
+        </p>
+
       </div>
 
-
-
       <button
-
         type="button"
-
         onClick={() => void verify()}
-
         disabled={phase === "verifying"}
-
         className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-black px-4 py-3.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-slate-800 disabled:opacity-60"
-
       >
-
         {phase === "verifying" && <Loader2 className="h-4 w-4 animate-spin" />}
-
-        I&apos;ve sent TON — verify payment
-
+        I&apos;ve sent TON — verify manually
       </button>
-
-
 
       {error && (
 

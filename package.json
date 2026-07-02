@@ -9,6 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "icons:generate": "node scripts/generate-brand-icons.mjs",
+    "brand:facebook-video": "node scripts/generate-facebook-ad-video.mjs",
+    "brand:facebook-ads": "node scripts/generate-facebook-ad-images.mjs",
     "prompts:match-images": "npx tsx scripts/print-match-image-prompts.ts",
     "flags:fetch": "npx tsx scripts/fetch-team-flags.ts",
     "test:e2e": "playwright test",

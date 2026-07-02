@@ -37,6 +37,10 @@
 /supabase/seed/
 /supabase/seed.sql
 
+
+/brand/
+# Facebook ad creatives (generated locally; not committed)
+/public/brand/facebook/
 # debug
 npm-debug.log*
 yarn-debug.log*

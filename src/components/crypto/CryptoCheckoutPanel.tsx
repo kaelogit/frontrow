@@ -19,6 +19,7 @@ import { SolanaCryptoPay } from "@/components/crypto/SolanaCryptoPay";
 import { UtxoCryptoPay } from "@/components/crypto/UtxoCryptoPay";
 import { TronCryptoPay } from "@/components/crypto/TronCryptoPay";
 import { TonCryptoPay } from "@/components/crypto/TonCryptoPay";
+import { CryptoAutoWatch } from "@/components/crypto/CryptoAutoWatch";
 
 interface CryptoCheckoutPanelProps {
   reference: string;
@@ -62,42 +63,60 @@ function PayRail({
   reference,
   offerToken,
   totalUsd,
+  expiresAt,
   onPaid,
 }: {
   option: CryptoPaymentOption;
   reference: string;
   offerToken?: string;
   totalUsd: number;
+  expiresAt?: string;
   onPaid: () => void;
 }) {
   const shared = { reference, offerToken, totalUsd, onPaid };
 
-  if (option.rail === "evm") {
-    return <EvmCryptoPay option={option} {...shared} />;
-  }
-  if (option.rail === "solana") {
-    return <SolanaCryptoPay {...shared} />;
-  }
-  if (option.rail === "utxo") {
-    return (
-      <UtxoCryptoPay
-        paymentId={option.id as "btc-bitcoin" | "ltc-litecoin" | "doge-dogecoin"}
-        {...shared}
+  const rail = (() => {
+    if (option.rail === "evm") {
+      return <EvmCryptoPay option={option} {...shared} />;
+    }
+    if (option.rail === "solana") {
+      return <SolanaCryptoPay {...shared} />;
+    }
+    if (option.rail === "utxo") {
+      return (
+        <UtxoCryptoPay
+          paymentId={option.id as "btc-bitcoin" | "ltc-litecoin" | "doge-dogecoin"}
+          {...shared}
+        />
+      );
+    }
+    if (option.rail === "tron") {
+      return (
+        <TronCryptoPay
+          paymentId={option.id as "trx-tron" | "usdt-tron"}
+          {...shared}
+        />
+      );
+    }
+    if (option.rail === "ton") {
+      return <TonCryptoPay {...shared} />;
+    }
+    return null;
+  })();
+
+  return (
+    <div className="space-y-4">
+      <CryptoAutoWatch
+        reference={reference}
+        offerToken={offerToken}
+        paymentId={option.id}
+        totalUsd={totalUsd}
+        expiresAt={expiresAt}
+        onPaid={onPaid}
       />
-    );
-  }
-  if (option.rail === "tron") {
-    return (
-      <TronCryptoPay
-        paymentId={option.id as "trx-tron" | "usdt-tron"}
-        {...shared}
-      />
-    );
-  }
-  if (option.rail === "ton") {
-    return <TonCryptoPay {...shared} />;
-  }
-  return null;
+      {rail}
+    </div>
+  );
 }
 
 export function CryptoCheckoutPanel({
@@ -291,6 +310,7 @@ export function CryptoCheckoutPanel({
           reference={reference}
           offerToken={offerToken}
           totalUsd={totalUsd}
+          expiresAt={expiresAt}
           onPaid={onPaid}
         />
       </div>
